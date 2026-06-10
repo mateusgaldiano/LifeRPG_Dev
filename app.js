@@ -1224,6 +1224,30 @@ window.switchTavernaTab = function(mode) {
         panelShop.style.display = 'none';
         panelInventory.style.display = 'block';
         renderInventory();
+};
+
+window.confirmRemoveQuest = function(id, title) {
+    // Pop-up nativo do browser — simples e funcional
+    const confirmed = confirm(`Remover "${title}" das suas missões?\n\nEssa ação não pode ser desfeita.`);
+    if (!confirmed) return;
+
+    // Remove de quests diárias
+    const qIdx = gameState.quests.findIndex(q => q.id === id);
+    if (qIdx !== -1) {
+        gameState.quests.splice(qIdx, 1);
+        saveGameData();
+        renderQuests();
+        showSystemToast(`✕ Missão removida.`);
+        return;
+    }
+
+    // Remove de side quests
+    const sqIdx = gameState.sideQuests.findIndex(q => q.id === id);
+    if (sqIdx !== -1) {
+        gameState.sideQuests.splice(sqIdx, 1);
+        saveGameData();
+        renderQuests();
+        showSystemToast(`✕ Side Quest removida.`);
     }
 };
 
@@ -1883,6 +1907,11 @@ function renderQuests() {
         }
 
         card.innerHTML = `
+            <button class="quest-remove-btn"
+                    data-id="${quest.id}"
+                    onclick="confirmRemoveQuest('${quest.id}', '${quest.title.replace(/'/g, "\\'")}')">
+                ✕
+            </button>
             <div class="quest-details">
                 <div class="quest-icon">${quest.icon}</div>
                 <div class="quest-title-wrap">
@@ -1911,6 +1940,11 @@ function renderQuests() {
             card.setAttribute('data-skill', 'productivity');
             const diffLabel = quest.difficulty === 'hard' ? 'RANK C' : quest.difficulty === 'medium' ? 'RANK D' : 'RANK E';
             card.innerHTML = `
+                <button class="quest-remove-btn"
+                        data-id="${quest.id}"
+                        onclick="confirmRemoveQuest('${quest.id}', '${quest.title.replace(/'/g, "\\'")}')">
+                    ✕
+                </button>
                 <div class="quest-details">
                     <div class="quest-icon">${quest.icon || '⚔️'}</div>
                     <div class="quest-title-wrap">
@@ -3946,7 +3980,8 @@ function setupHabitLibraryAndTabs() {
     const modalConfirm = document.getElementById('modal-confirm-habit');
     const closeConfirm = document.getElementById('close-confirm-modal');
     const cancelConfirm = document.getElementById('btn-cancel-add-habit');
-    const confirmBtn = document.getElementById('btn-confirm-add-habit');
+    const confirmDailyBtn = document.getElementById('btn-habit-confirm-daily');
+    const confirmSideBtn = document.getElementById('btn-habit-confirm-side');
 
     const hideConfirm = () => {
         if (modalConfirm) modalConfirm.style.display = 'none';
@@ -3958,36 +3993,57 @@ function setupHabitLibraryAndTabs() {
         if (e.target === modalConfirm) hideConfirm();
     });
 
-    confirmBtn?.addEventListener('click', () => {
+    confirmDailyBtn?.addEventListener('click', () => {
         if (!selectedLibraryHabit) return;
-
-        const id = 'sq-lib-' + Date.now();
-        const { title, icon, difficulty, skill } = selectedLibraryHabit;
-        let xp = 25, gold = 15;
-        if (difficulty === 'easy') { xp = 10; gold = 5; }
-        else if (difficulty === 'hard') { xp = 50; gold = 30; }
-
-        gameState.sideQuests.push({
-            id,
-            title,
-            type: 'side',
-            icon,
-            difficulty,
-            completed: false,
-            xp,
-            gold,
-            skill
-        });
-
-        saveGameData();
-        renderQuests();
-        
-        showSystemToast('⚔️ Hábito adicionado às Missões Paralelas!');
-        
-        hideConfirm();
-        modalSq.style.display = 'none';
-        selectedLibraryHabit = null;
+        addHabitFromLibrary(selectedLibraryHabit, 'daily');
     });
+
+    confirmSideBtn?.addEventListener('click', () => {
+        if (!selectedLibraryHabit) return;
+        addHabitFromLibrary(selectedLibraryHabit, 'side');
+    });
+}
+
+function addHabitFromLibrary(h, type = 'daily') {
+    let xp = 25, gold = 15;
+    if (h.difficulty === 'easy') { xp = 10; gold = 5; }
+    else if (h.difficulty === 'hard') { xp = 50; gold = 30; }
+
+    const isSq = (type === 'side');
+    const prefix = isSq ? 'sq-lib-' : 'q-lib-';
+
+    const newQuest = {
+        id:        prefix + Date.now(),
+        title:     h.title,
+        type:      type,           // 'daily' ou 'side'
+        skill:     h.skill,
+        difficulty: h.difficulty,
+        xp:        xp,
+        gold:      gold,
+        emoji:     h.icon || '⚔️',
+        icon:      h.icon || '⚔️',
+        completed: false,
+        fromLibrary: true
+    };
+
+    if (type === 'daily') {
+        gameState.quests.push(newQuest);
+        showSystemToast(`📅 "${h.title}" adicionada às Missões Diárias!`);
+    } else {
+        gameState.sideQuests.push(newQuest);
+        showSystemToast(`⚡ "${h.title}" adicionada às Side Quests!`);
+    }
+
+    saveGameData();
+    renderQuests();
+
+    const modalConfirm = document.getElementById('modal-confirm-habit');
+    if (modalConfirm) modalConfirm.style.display = 'none';
+
+    const modalSq = document.getElementById('modal-sidequest');
+    if (modalSq) modalSq.style.display = 'none';
+
+    selectedLibraryHabit = null;
 }
 
 function renderHabitLibrary(filter = 'all', search = '') {

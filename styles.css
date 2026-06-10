@@ -2309,3 +2309,38 @@ body::before {
     flex: 1;
 }
 
+/* -- Botão de remoção do card de missão ---------------------------- */
+.quest-remove-btn {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    background: rgba(255, 59, 59, 0.08);
+    border: 1px solid rgba(255, 59, 59, 0.25);
+    border-radius: var(--radius-sm);
+    color: rgba(255, 59, 59, 0.6);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s;
+    position: relative;
+    z-index: 2;
+}
+.quest-remove-btn:hover {
+    background: rgba(255, 59, 59, 0.2);
+    border-color: var(--neon-red);
+    color: var(--neon-red);
+    box-shadow: 0 0 10px rgba(255, 59, 59, 0.3);
+}
+
+/* -- Botão de conclusão com ✓ ------------------------------------- */
+.quest-complete-btn {
+    font-size: 16px;
+    font-weight: 900;
+}
+.quest-card.completed .quest-complete-btn {
+    color: #000;
+}
+

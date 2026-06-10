@@ -596,10 +596,18 @@
                 <span class="close-modal-btn" id="close-confirm-modal">&times;</span>
                 <h4 id="confirm-habit-title" style="font-family:var(--font-hud); color:#fff; font-size:15px; margin-bottom:8px; margin-top:10px;">Adicionar Hábito?</h4>
                 <p id="confirm-habit-desc" style="font-size:12px; color:var(--text-muted); margin-bottom:20px; line-height:1.4;"></p>
-                <div class="confirm-actions-row" style="display:flex; gap:8px; width:100%;">
-                    <button type="button" id="btn-confirm-add-habit" class="btn-submit" style="flex:1;">CONFIRMAR</button>
-                    <button type="button" id="btn-cancel-add-habit" class="btn-submit btn-secondary" style="flex:1;">CANCELAR</button>
+                <div style="display:flex; gap:10px; margin-top:8px; width:100%;">
+                    <button type="button" id="btn-habit-confirm-daily" class="btn-submit" style="flex:1;">
+                        📅 MISSÃO DIÁRIA
+                    </button>
+                    <button type="button" id="btn-habit-confirm-side" class="btn-submit" 
+                            style="flex:1; background:linear-gradient(90deg,var(--neon-purple),#a78bfa); box-shadow:0 0 20px var(--glow-purple);">
+                        ⚡ SIDE QUEST
+                    </button>
                 </div>
+                <p style="font-size:10px; color:rgba(255,255,255,0.3); text-align:center; margin-top:8px; font-family:var(--font-hud); letter-spacing:0.5px;">
+                    DIÁRIA = repete todo dia · SIDE QUEST = missão pontual
+                </p>
             </div>
         </div>
 
