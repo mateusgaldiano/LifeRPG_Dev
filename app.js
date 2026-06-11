@@ -3932,16 +3932,17 @@ function setupHabitLibraryAndTabs() {
 
     if (!modalSq || !tabCreateBtn || !tabLibraryBtn || !panelCreate || !panelLibrary) return;
 
-    // Reset when modal opens
+    // Reset when modal opens (Habit Library active by default)
     document.getElementById('btn-add-sidequest')?.addEventListener('click', () => {
-        tabCreateBtn.classList.add('active');
-        tabLibraryBtn.classList.remove('active');
-        panelCreate.classList.add('active');
-        panelCreate.style.display = 'flex';
-        panelLibrary.classList.remove('active');
-        panelLibrary.style.display = 'none';
+        tabLibraryBtn.classList.add('active');
+        tabCreateBtn.classList.remove('active');
+        panelLibrary.classList.add('active');
+        panelLibrary.style.display = 'flex';
+        panelCreate.classList.remove('active');
+        panelCreate.style.display = 'none';
         activeLibraryFilter = 'all';
         if (searchInput) searchInput.value = '';
+        renderHabitLibrary('all', '');
     });
 
     tabCreateBtn.addEventListener('click', () => {

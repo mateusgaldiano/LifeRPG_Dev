@@ -532,12 +532,31 @@
                 
                 <!-- Abas da Quest Modal -->
                 <div class="modal-tabs" style="display:flex; border-bottom:1px solid var(--border-glass); margin-bottom:16px; gap:10px;">
-                    <button type="button" class="modal-tab-btn active" id="modal-tab-create">CRIAR PERSONALIZADA</button>
-                    <button type="button" class="modal-tab-btn" id="modal-tab-library">BIBLIOTECA DE HÁBITOS</button>
+                    <button type="button" class="modal-tab-btn active" id="modal-tab-library">BIBLIOTECA DE HÁBITOS</button>
+                    <button type="button" class="modal-tab-btn" id="modal-tab-create">CRIAR PERSONALIZADA</button>
                 </div>
                 
+                <!-- Conteúdo Aba: Biblioteca de Hábitos -->
+                <div id="modal-panel-library" class="modal-panel active" style="display:flex; flex-direction:column; gap:12px; width:100%;">
+                    <div class="library-search-row">
+                        <input type="text" id="library-search" placeholder="Buscar hábito na biblioteca..." style="width:100%; background:var(--bg-input); border:1px solid var(--border-glass); color:#fff; padding:10px 16px; border-radius:var(--radius-md); font-size:13px; outline:none;">
+                    </div>
+                    <div class="library-filters" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+                        <button type="button" class="filter-btn active" data-filter="all">TODAS</button>
+                        <button type="button" class="filter-btn" data-filter="physical">FÍSICO</button>
+                        <button type="button" class="filter-btn" data-filter="mental">MENTAL</button>
+                        <button type="button" class="filter-btn" data-filter="productivity">FOCO</button>
+                        <button type="button" class="filter-btn" data-filter="wisdom">SABER</button>
+                        <button type="button" class="filter-btn" data-filter="routine">ROTINA</button>
+                        <button type="button" class="filter-btn" data-filter="social">SOCIAL</button>
+                    </div>
+                    <div class="library-list" id="library-habits-list" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; width:100%;">
+                        <!-- Lista gerada via JS -->
+                    </div>
+                </div>
+
                 <!-- Conteúdo Aba: Criar Personalizada -->
-                <div id="modal-panel-create" class="modal-panel active">
+                <div id="modal-panel-create" class="modal-panel" style="display:none; flex-direction:column; gap:12px; width:100%;">
                     <form id="form-sidequest" style="display:flex; flex-direction:column; gap:12px; width:100%;">
                         <div class="form-field">
                             <label for="sq-title">NOME DA MISSÃO</label>
@@ -567,25 +586,6 @@
                         </div>
                         <button type="submit" class="btn-submit" style="margin-top:10px; width:100%;">LANÇAR QUEST</button>
                     </form>
-                </div>
-                
-                <!-- Conteúdo Aba: Biblioteca de Hábitos -->
-                <div id="modal-panel-library" class="modal-panel" style="display:none; flex-direction:column; gap:12px; width:100%;">
-                    <div class="library-search-row">
-                        <input type="text" id="library-search" placeholder="Buscar hábito na biblioteca..." style="width:100%; background:var(--bg-input); border:1px solid var(--border-glass); color:#fff; padding:10px 16px; border-radius:var(--radius-md); font-size:13px; outline:none;">
-                    </div>
-                    <div class="library-filters" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-                        <button type="button" class="filter-btn active" data-filter="all">TODAS</button>
-                        <button type="button" class="filter-btn" data-filter="physical">FÍSICO</button>
-                        <button type="button" class="filter-btn" data-filter="mental">MENTAL</button>
-                        <button type="button" class="filter-btn" data-filter="productivity">FOCO</button>
-                        <button type="button" class="filter-btn" data-filter="wisdom">SABER</button>
-                        <button type="button" class="filter-btn" data-filter="routine">ROTINA</button>
-                        <button type="button" class="filter-btn" data-filter="social">SOCIAL</button>
-                    </div>
-                    <div class="library-list" id="library-habits-list" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; width:100%;">
-                        <!-- Lista gerada via JS -->
-                    </div>
                 </div>
             </div>
         </div>
