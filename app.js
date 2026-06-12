@@ -939,7 +939,7 @@ function drawRadarChart() {
                     : ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
             }
             ctx.closePath();
-            ctx.strokeStyle = g === 5 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)';
+            ctx.strokeStyle = g === 5 ? 'rgba(15,31,53,0.15)' : 'rgba(15,31,53,0.05)';
             ctx.lineWidth = 1;
             ctx.stroke();
         }
@@ -950,7 +950,7 @@ function drawRadarChart() {
             ctx.beginPath();
             ctx.moveTo(cx, cy);
             ctx.lineTo(cx + maxR * Math.cos(a), cy + maxR * Math.sin(a));
-            ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+            ctx.strokeStyle = 'rgba(15,31,53,0.07)';
             ctx.lineWidth = 1;
             ctx.stroke();
         }
@@ -1004,7 +1004,7 @@ function drawRadarChart() {
             ctx.textAlign    = Math.abs(cosA) < 0.15 ? 'center' : cosA > 0 ? 'left' : 'right';
 
             ctx.font      = 'bold 10px "JetBrains Mono", monospace';
-            ctx.fillStyle = 'rgba(255,255,255,0.65)';
+            ctx.fillStyle = '#0f1f35';
             ctx.fillText(skillLabels[skillTypes[i]], lx, ly - 6);
 
             ctx.font      = 'bold 11px "JetBrains Mono", monospace';

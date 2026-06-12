@@ -902,7 +902,7 @@ body::before {
     outline: none;
 }
 .btn-settings-icon:hover {
-    color: #fff;
+    color: var(--text-primary);
     background: rgba(0, 242, 254, 0.1);
     box-shadow: 0 0 10px var(--glow-blue);
 }
@@ -2185,7 +2185,7 @@ body::before {
     transition: all 0.2s;
 }
 .filter-btn:hover {
-    color: #fff;
+    color: var(--text-primary);
     background: rgba(255, 255, 255, 0.08);
 }
 .filter-btn.active {
