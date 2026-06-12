@@ -490,9 +490,9 @@ function computeAttributes() {
     const s = gameState.skills || {};
     const get = (k) => s[k] ? (s[k].level - 1) + (s[k].xp / (s[k].xpToNext || 5)) : 0;
 
-    const willpower = (get('mental') + get('routine')) / 2;
-    const intellect = (get('wisdom') + get('productivity')) / 2;
-    const health    = (get('physical') + get('social')) / 2;
+    const willpower = (get('physical') + get('routine')) / 2;
+    const intellect = (get('mental') + get('wisdom')) / 2;
+    const health    = (get('focus') + get('social')) / 2;
 
     const maxVal = 5;
     return {
