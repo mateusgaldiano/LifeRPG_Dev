@@ -1935,7 +1935,7 @@ function renderQuests() {
     //  Side Quests 
     const activeDungeon = gameState.activeDungeon;
     if (gameState.sideQuests.length === 0 && !(activeDungeon && !activeDungeon.completed)) {
-        sideContainer.innerHTML = `<div style="text-align:center;color:rgba(255,255,255,0.2);font-size:12px;padding:24px;font-family:var(--font-hud);letter-spacing:1px">NENHUMA MISSÃO ATIVA</div>`;
+        sideContainer.innerHTML = `<div style="text-align:center;color:rgba(15,31,53,0.35);font-size:12px;padding:24px;font-family:var(--font-hud);letter-spacing:1px">NENHUMA MISSÃO ATIVA</div>`;
     } else {
         gameState.sideQuests.forEach(quest => {
             const card = document.createElement('div');
