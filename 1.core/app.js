@@ -991,6 +991,14 @@ function drawRadarChart() {
         }
 
         // 5. Rótulos (nome + nível)
+        const skillLabelColors = {
+            physical: '#f97316',
+            routine: '#fb923c',
+            mental: '#1e3a8a',
+            wisdom: '#38bdf8',
+            productivity: '#15803d',
+            social: '#4ade80'
+        };
         for (let i = 0; i < N; i++) {
             const { skill } = getR(skillTypes[i]);
             const a    = (i * 2 * Math.PI / N) - Math.PI / 2;
@@ -998,13 +1006,13 @@ function drawRadarChart() {
             const lx   = cx + dist * Math.cos(a);
             const ly   = cy + dist * Math.sin(a);
             const cosA = Math.cos(a);
-            const color = getSkillColor(skill.level);
+            const color = skillLabelColors[skillTypes[i]] || '#0f1f35';
 
             ctx.textBaseline = 'middle';
             ctx.textAlign    = Math.abs(cosA) < 0.15 ? 'center' : cosA > 0 ? 'left' : 'right';
 
             ctx.font      = 'bold 10px "JetBrains Mono", monospace';
-            ctx.fillStyle = '#0f1f35';
+            ctx.fillStyle = color;
             ctx.fillText(skillLabels[skillTypes[i]], lx, ly - 6);
 
             ctx.font      = 'bold 11px "JetBrains Mono", monospace';
