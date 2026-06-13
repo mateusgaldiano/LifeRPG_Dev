@@ -228,7 +228,7 @@
                 <!-- ESTADO VAZIO -->
                 <div id="global-empty-state" class="dashboard-card" style="display: none; padding: 40px 20px; text-align: center; margin-top: 20px;">
                     <span style="font-size: 3rem; display: block; margin-bottom: 15px;">📊</span>
-                    <h3 style="color: var(--neon-cyan); margin-bottom: 8px;">SEU MAPA TÁTICO ESTÁ SENDO GERADO</h3>
+                    <h3 style="color: var(--neon-purple); margin-bottom: 8px;">SEU MAPA TÁTICO ESTÁ SENDO GERADO</h3>
                     <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; max-width: 320px; margin: 0 auto;">
                         O painel de consistência anual e gráficos de desempenho precisam de dados históricos para renderizar.
                         <br><br>
@@ -248,9 +248,9 @@
                     <div class="heatmap-legend" style="display: flex; gap: 8px; font-size: 0.7rem; justify-content: flex-end; margin-top: 8px; color: var(--text-muted);">
                         <span>Menos</span>
                         <span class="hm-block" style="background: #1a1b26; width: 10px; height: 10px; border-radius: 2px;"></span>
-                        <span class="hm-block" style="background: rgba(0,240,255,0.2); width: 10px; height: 10px; border-radius: 2px;"></span>
-                        <span class="hm-block" style="background: rgba(0,240,255,0.6); width: 10px; height: 10px; border-radius: 2px;"></span>
-                        <span class="hm-block" style="background: var(--neon-cyan); width: 10px; height: 10px; border-radius: 2px; box-shadow: 0 0 5px var(--neon-cyan);"></span>
+                        <span class="hm-block" style="background: rgba(139,92,246,0.2); width: 10px; height: 10px; border-radius: 2px;"></span>
+                        <span class="hm-block" style="background: rgba(139,92,246,0.6); width: 10px; height: 10px; border-radius: 2px;"></span>
+                        <span class="hm-block" style="background: var(--neon-purple); width: 10px; height: 10px; border-radius: 2px; box-shadow: 0 0 5px var(--neon-purple);"></span>
                         <span>Mais</span>
                     </div>
                 </div>
@@ -259,7 +259,7 @@
                 <div class="dashboard-metrics-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                     <div class="metric-box">
                         <div class="metric-title">TOTAL HÁBITOS</div>
-                        <div class="metric-value" id="dash-total-habits" style="color: var(--neon-cyan);">0</div>
+                        <div class="metric-value" id="dash-total-habits" style="color: var(--neon-purple);">0</div>
                     </div>
                     <div class="metric-box">
                         <div class="metric-title">DIAS PERFEITOS</div>
@@ -444,7 +444,7 @@
                             <div class="reward-card" onclick="buyStoreItem('skin_mist_monarch')">
                                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                     <div>
-                                        <h3 style="color:var(--neon-cyan);">Monarca da Névoa</h3>
+                                        <h3 style="color:var(--neon-purple);">Monarca da Névoa</h3>
                                         <p style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Guerreiro envolto em névoa azul brilhante. (Requer Rank B)</p>
                                     </div>
                                     <span style="font-size: 1.5rem;">👥</span>
@@ -501,7 +501,7 @@
                 <section id="tab-chat" class="tab-content" style="padding:0; height:calc(100vh - 190px); display:none; flex-direction:column;">
                     <div class="chat-container" style="display:flex; flex-direction:column; height:100%; border:1px solid var(--border-color); border-radius:var(--radius-lg); background:var(--bg-card); overflow:hidden;">
                         <div class="chat-header" style="display:flex; align-items:center; gap:14px; padding:18px 28px; border-bottom:1px solid var(--border-color); background:var(--bg-input);">
-                            <div class="chat-mentor-avatar" style="width:40px; height:40px; background:linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); border-radius:10px; display:flex; justify-content:center; align-items:center; font-family:var(--font-hud); font-size:16px; font-weight:900; color:#000; box-shadow:0 0 15px var(--glow-blue);">🍵</div>
+                            <div class="chat-mentor-avatar" style="width:40px; height:40px; background:linear-gradient(135deg, var(--neon-purple), #9f7aea); border-radius:10px; display:flex; justify-content:center; align-items:center; font-family:var(--font-hud); font-size:16px; font-weight:900; color:#fff; box-shadow:0 0 15px var(--glow-purple);">🍵</div>
                             <div class="chat-mentor-info">
                                <h3 style="font-family:var(--font-hud); font-size:13px; color:var(--text-primary); letter-spacing:1px; margin:0;">Tio Iroh</h3>
                                <span class="chat-status-label" style="font-family:var(--font-hud); font-size:8px; color:var(--neon-green); letter-spacing:1px;">ONLINE</span>
@@ -512,7 +512,7 @@
                         </div>
                         <div class="chat-input-wrapper" style="padding:14px 28px; border-top:1px solid var(--border-color); display:flex; gap:10px; align-items:center; background:var(--bg-input);">
                             <input type="text" id="chat-input" placeholder="Converse com seu mentor sobre sua jornada..." maxlength="300" style="flex:1; background:var(--bg-card); border:1px solid var(--border-color); color:var(--text-primary); padding:11px 18px; border-radius:30px; font-size:13px; font-family:var(--font-body); outline:none; transition:border-color 0.2s;">
-                            <button id="chat-send-btn" class="btn-send" style="width:40px; height:40px; background:var(--neon-blue); color:#000; border:none; border-radius:50%; font-size:16px; font-weight:900; cursor:pointer; display:flex; justify-content:center; align-items:center; box-shadow:0 0 12px var(--glow-blue); transition:all 0.2s;">
+                            <button id="chat-send-btn" class="btn-send" style="width:40px; height:40px; background:var(--neon-purple); color:#fff; border:none; border-radius:50%; font-size:16px; font-weight:900; cursor:pointer; display:flex; justify-content:center; align-items:center; box-shadow:0 0 12px var(--glow-purple); transition:all 0.2s;">
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                             </button>
                         </div>
@@ -806,9 +806,9 @@
 
     <!-- Onboarding Wizard -->
     <div id="onboarding-wizard" class="modal" style="display: none; background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); z-index: 9999;">
-        <div class="modal-box" style="border: 1px solid var(--neon-cyan); max-width: 500px;">
+        <div class="modal-box" style="border: 1px solid var(--neon-purple); max-width: 500px;">
             <div id="wizard-step-1" class="wizard-step">
-                <h2 style="color: var(--neon-cyan); text-align: center; text-transform: uppercase;">O Despertar</h2>
+                <h2 style="color: var(--neon-purple); text-align: center; text-transform: uppercase;">O Despertar</h2>
                 <p style="text-align: center; margin-bottom: 20px;">O Sistema te escolheu. Qual é o seu nome, guerreiro?</p>
                 <div class="form-group">
                     <input type="text" id="wizard-name-input" placeholder="Digite seu nome..." autocomplete="off">
@@ -817,7 +817,7 @@
             </div>
             
             <div id="wizard-step-2" class="wizard-step" style="display: none;">
-                <h2 style="color: var(--neon-cyan); text-align: center; text-transform: uppercase;">Arquétipo</h2>
+                <h2 style="color: var(--neon-purple); text-align: center; text-transform: uppercase;">Arquétipo</h2>
                 <p style="text-align: center; margin-bottom: 20px;">Qual área da sua vida você quer evoluir primeiro?</p>
                 <div class="wizard-archetypes-grid">
                     <div class="archetype-card" data-arch="corpo">
@@ -852,12 +852,12 @@
 
             <!-- HOOK STEP -->
             <div id="wizard-step-hook" class="wizard-step" style="display: none; text-align: center;">
-                <h2 style="color: var(--neon-cyan); text-transform: uppercase;">A Primeira Missão</h2>
+                <h2 style="color: var(--neon-purple); text-transform: uppercase;">A Primeira Missão</h2>
                 <div style="font-size: 3rem; margin: 15px 0;" id="hook-icon">🎯</div>
                 <p style="margin-bottom: 15px; font-size: 1.1rem;">Excelente escolha.</p>
-                <p style="color: var(--text-light); margin-bottom: 25px;">Com base no arquétipo <strong id="hook-arch-name" style="color: var(--neon-cyan);">Mente Sã</strong>, o Sistema sugere começar com este micro-hábito hoje:</p>
+                <p style="color: var(--text-light); margin-bottom: 25px;">Com base no arquétipo <strong id="hook-arch-name" style="color: var(--neon-purple);">Mente Sã</strong>, o Sistema sugere começar com este micro-hábito hoje:</p>
                 
-                <div style="background: rgba(0, 240, 255, 0.1); border: 1px solid var(--neon-cyan); padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+                <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid var(--neon-purple); padding: 15px; border-radius: 8px; margin-bottom: 25px;">
                     <strong id="hook-habit-title" style="font-size: 1.2rem;">Meditar por 3 minutos</strong>
                 </div>
 
@@ -866,7 +866,7 @@
             </div>
 
             <div id="wizard-step-3" class="wizard-step" style="display: none;">
-                <h2 style="color: var(--neon-cyan); text-align: center; text-transform: uppercase;">O Juramento</h2>
+                <h2 style="color: var(--neon-purple); text-align: center; text-transform: uppercase;">O Juramento</h2>
                 <p style="text-align: center; margin-bottom: 15px;">O Sistema não tolera falhas contínuas.</p>
                 
                 <label style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">Horas dedicadas por dia:</label>
@@ -932,14 +932,14 @@
         <div class="modal-box weekly-report-modal-box">
             <span class="close-modal-btn" id="btn-close-weekly-report">&times;</span>
             <h3 class="neon-purple-text font-hud" style="letter-spacing: 2px; text-align: center; margin-bottom: 8px;">[ AVALIAÇÃO DO SISTEMA ]</h3>
-            <div id="report-period-text" style="color: var(--neon-cyan); font-family: var(--font-hud); font-size: 11px; text-align: center; margin-bottom: 20px; letter-spacing: 1px;">SEMANA 23 (08/06 a 14/06)</div>
+            <div id="report-period-text" style="color: var(--neon-purple); font-family: var(--font-hud); font-size: 11px; text-align: center; margin-bottom: 20px; letter-spacing: 1px;">SEMANA 23 (08/06 a 14/06)</div>
             
             <!-- Resumo de Desempenho -->
             <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 18px; border-radius: 8px; margin-bottom: 18px; text-align: center;">
                 <div style="font-size: 9px; color: var(--text-muted); font-family: var(--font-hud); letter-spacing: 1px; margin-bottom: 6px;">TAXA DE SOBREVIVÊNCIA</div>
-                <div class="font-hud" id="report-rate-val" style="font-size: 38px; font-weight: bold; color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0,240,255,0.3); line-height: 1;">0%</div>
+                <div class="font-hud" id="report-rate-val" style="font-size: 38px; font-weight: bold; color: var(--neon-purple); text-shadow: 0 0 20px rgba(147,51,234,0.4); line-height: 1;">0%</div>
                 <div class="progress-bar-track" style="margin: 12px auto 8px auto; width: 85%; height: 6px; background: var(--border-color);">
-                    <div class="progress-bar-fill" id="report-rate-bar" style="width: 0%; background: var(--neon-cyan); box-shadow: 0 0 8px var(--neon-cyan); height: 100%; transition: width 0.8s ease-in-out;"></div>
+                    <div class="progress-bar-fill" id="report-rate-bar" style="width: 0%; background: var(--neon-purple); box-shadow: 0 0 8px rgba(147,51,234,0.6); height: 100%; transition: width 0.8s ease-in-out;"></div>
                 </div>
                 <div style="font-size: 11px; color: var(--text-secondary);" id="report-quests-count">Concluiu 0 de 0 missões</div>
             </div>
@@ -951,9 +951,9 @@
                     <div class="font-hud" id="report-days-perfect" style="font-size: 14px; font-weight: bold; color: var(--neon-purple);">0</div>
                     <div style="font-size: 8px; color: var(--text-muted); font-family: var(--font-hud); letter-spacing: 0.5px;">PERFEITOS</div>
                 </div>
-                <div class="report-stat-card" style="background: rgba(0, 240, 255, 0.03); border: 1px solid rgba(0, 240, 255, 0.15); padding: 8px 4px; border-radius: 6px;">
+                <div class="report-stat-card" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); padding: 8px 4px; border-radius: 6px;">
                     <div style="font-size: 16px; margin-bottom: 2px;">🟢</div>
-                    <div class="font-hud" id="report-days-good" style="font-size: 14px; font-weight: bold; color: var(--neon-cyan);">0</div>
+                    <div class="font-hud" id="report-days-good" style="font-size: 14px; font-weight: bold; color: var(--neon-purple);">0</div>
                     <div style="font-size: 8px; color: var(--text-muted); font-family: var(--font-hud); letter-spacing: 0.5px;">BONS</div>
                 </div>
                 <div class="report-stat-card" style="background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.15); padding: 8px 4px; border-radius: 6px;">
@@ -972,7 +972,7 @@
             </div>
 
             <!-- Veredito -->
-            <div id="report-verdict-box" style="background: linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(0, 240, 255, 0.1) 100%); border: 1px solid var(--neon-purple); padding: 14px; border-radius: 8px; margin-bottom: 22px; text-align: center;">
+            <div id="report-verdict-box" style="background: linear-gradient(135deg, rgba(147, 51, 234, 0.12) 0%, rgba(109, 40, 217, 0.08) 100%); border: 1px solid var(--neon-purple); padding: 14px; border-radius: 8px; margin-bottom: 22px; text-align: center;">
                 <div style="font-size: 9px; color: var(--text-muted); font-family: var(--font-hud); letter-spacing: 1.5px; margin-bottom: 2px;">VEREDITO DE AVALIAÇÃO</div>
                 <div class="font-hud" id="report-verdict-rank" style="font-size: 22px; font-weight: bold; margin: 4px 0;">RANK D</div>
                 <div style="font-size: 11px; line-height: 1.4; color: var(--text-secondary); padding: 0 4px;" id="report-verdict-desc">"..."</div>

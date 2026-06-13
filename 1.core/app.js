@@ -967,8 +967,8 @@ function drawRadarChart() {
         ctx.closePath();
 
         const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR);
-        grad.addColorStop(0, 'rgba(0,240,255,0.40)');
-        grad.addColorStop(1, 'rgba(0,240,255,0.06)');
+        grad.addColorStop(0, 'rgba(139,92,246,0.40)');
+        grad.addColorStop(1, 'rgba(139,92,246,0.06)');
         ctx.fillStyle = grad;
         ctx.fill();
 
@@ -3858,7 +3858,7 @@ function checkAndShowWeeklyReport() {
     
     if (focusEl) {
         if (maxCount > 0) {
-            focusEl.innerHTML = `Você focou majoritariamente na habilidade: <strong style="color: var(--neon-cyan);">${topSkillName}</strong> (${maxCount} quests feitas).`;
+            focusEl.innerHTML = `Você focou majoritariamente na habilidade: <strong style="color: var(--neon-purple);">${topSkillName}</strong> (${maxCount} quests feitas).`;
         } else {
             focusEl.innerHTML = `Nenhuma missão realizada no período.`;
         }
