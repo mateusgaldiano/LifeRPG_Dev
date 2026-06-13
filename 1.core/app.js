@@ -909,7 +909,7 @@ function drawRadarChart() {
 
         ctx.clearRect(0, 0, W, H);
 
-        const skillTypes  = ['physical','mental','productivity','social','wisdom','routine'];
+        const skillTypes  = ['physical','wisdom','productivity','social','mental','routine'];
         const skillLabels = {
             physical:'FÍSICO', mental:'MENTAL', productivity:'FOCO',
             social:'CONEXÃO', wisdom:'SABEDORIA', routine:'ROTINA'

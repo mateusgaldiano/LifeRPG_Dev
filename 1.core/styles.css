@@ -216,7 +216,7 @@ body::before {
     width: 64px; height: 72px;
     flex-shrink: 0;
     cursor: pointer;
-    filter: drop-shadow(0 0 4px var(--neon-cyan));
+    filter: drop-shadow(0 0 5px rgba(123, 104, 238, 0.6));
     transition: filter 0.3s, transform 0.3s;
 }
 
@@ -239,7 +239,7 @@ body::before {
     background: linear-gradient(135deg, var(--neon-red), #ff0055);
 }
 .avatar-hex-wrapper:hover {
-    filter: drop-shadow(0 0 8px var(--neon-cyan));
+    filter: drop-shadow(0 0 10px rgba(123, 104, 238, 0.9));
     transform: scale(1.05);
 }
 .avatar-hex-img {
@@ -1228,7 +1228,7 @@ body::before {
 
 /* â”€â”€ MOBILE SCROLL OVERRIDES â”€â”€ */
 
-/* â”€â”€ PWA FOOTER INSTALL BUTTON â”€â”€ */
+/* ── PWA FOOTER INSTALL BUTTON ── */
 .pwa-install-mobile-footer {
     display: flex;
     justify-content: center;
@@ -1236,9 +1236,9 @@ body::before {
     padding: 0 8px;
 }
 .btn-pwa-install-footer {
-    background: linear-gradient(90deg, rgba(0, 242, 254, 0.12) 0%, rgba(0, 240, 255, 0.04) 100%);
-    border: 1px dashed var(--neon-cyan);
-    color: var(--neon-cyan);
+    background: linear-gradient(90deg, rgba(123, 104, 238, 0.12) 0%, rgba(123, 104, 238, 0.04) 100%);
+    border: 1px dashed #7B68EE;
+    color: #7B68EE;
     font-family: var(--font-hud);
     font-size: 12px;
     letter-spacing: 1.5px;
@@ -1251,14 +1251,25 @@ body::before {
     display: block; /* Visible by default, hidden by JS if already installed */
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     text-transform: uppercase;
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.05);
+    box-shadow: 0 0 10px rgba(123, 104, 238, 0.05);
 }
 .btn-pwa-install-footer:hover, .btn-pwa-install-footer:active {
-    background: linear-gradient(90deg, rgba(0, 242, 254, 0.22) 0%, rgba(0, 240, 255, 0.06) 100%);
+    background: linear-gradient(90deg, rgba(123, 104, 238, 0.22) 0%, rgba(123, 104, 238, 0.06) 100%);
     border-style: solid;
+    border-color: #7B68EE;
     color: var(--text-primary);
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+    box-shadow: 0 0 15px rgba(123, 104, 238, 0.2);
     transform: translateY(-2px);
+}
+#btn-add-sidequest {
+    background: linear-gradient(90deg, #6B5ECD, #7B68EE) !important;
+    color: #fff !important;
+    box-shadow: 0 0 12px rgba(123, 104, 238, 0.4) !important;
+}
+#btn-add-sidequest:hover {
+    background: #fff !important;
+    color: #7B68EE !important;
+    box-shadow: 0 0 12px rgba(123, 104, 238, 0.6) !important;
 }
 
 /* â”€â”€ Synergy Badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
