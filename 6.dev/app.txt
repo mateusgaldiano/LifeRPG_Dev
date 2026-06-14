@@ -896,16 +896,16 @@ function drawRadarChart() {
 
         // Força display:block via JS (algo sobrescrevia para 'inline')
         canvas.width  = 260;
-        canvas.height = 260;
+        canvas.height = 210;
         canvas.style.display = 'block';
         canvas.style.margin  = '0 auto';
 
         const ctx = canvas.getContext('2d');
         if (!ctx) { console.error('[Radar] contexto 2d nulo!'); return; }
 
-        const W = 260, H = 260;
+        const W = 260, H = 210;
         const cx = W / 2, cy = H / 2;
-        const maxR = 72;
+        const maxR = 56;
 
         ctx.clearRect(0, 0, W, H);
 

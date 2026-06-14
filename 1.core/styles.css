@@ -159,8 +159,8 @@ body::before {
 #sidebar-panel {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 20px 18px;
+    gap: 10px;
+    padding: 10px 14px;
     overflow-y: auto;
     overflow-x: hidden;
     height: 100%;
@@ -188,7 +188,7 @@ body::before {
     background: var(--bg-card);
     border: 1px solid var(--border-glass);
     border-radius: var(--radius-lg);
-    padding: 18px;
+    padding: 12px;
     overflow: visible;
     transition: border-color 0.3s;
 }
@@ -209,7 +209,7 @@ body::before {
 }
 
 /* Avatar + Info */
-.player-card-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.player-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 
 .avatar-hex-wrapper {
     position: relative;
@@ -277,7 +277,7 @@ body::before {
 .rank-badge.rank-a { background: #f97316; box-shadow: 0 0 10px rgba(249,115,22,0.5); }
 .rank-badge.rank-s { background: linear-gradient(135deg, var(--neon-gold), #f97316); box-shadow: 0 0 15px var(--glow-gold); }
 
-.player-title { font-size: 10px; color: var(--text-secondary); letter-spacing: 0.5px; margin-bottom: 8px; }
+.player-title { font-size: 10px; color: var(--text-secondary); letter-spacing: 0.5px; margin-bottom: 4px; }
 
 .level-row { display: flex; align-items: baseline; gap: 6px; }
 .level-label { font-family: var(--font-hud); font-size: 8px; color: var(--text-muted); letter-spacing: 1px; }
@@ -290,7 +290,7 @@ body::before {
 }
 
 /* XP Bar */
-.xp-section { margin-bottom: 12px; }
+.xp-section { margin-bottom: 6px; }
 .xp-bar-header {
     display: flex; justify-content: space-between;
     font-size: 9px; font-family: var(--font-hud);
@@ -325,14 +325,14 @@ body::before {
 }
 
 /* Recursos */
-.player-resources { display: flex; gap: 10px; }
+.player-resources { display: flex; gap: 8px; }
 .resource-chip {
     flex: 1;
     display: flex; align-items: center; gap: 6px;
     background: rgba(255,255,255,0.03);
     border: 1px solid var(--border-glass);
     border-radius: var(--radius-sm);
-    padding: 8px 10px;
+    padding: 5px 8px;
     transition: all 0.2s;
 }
 .resource-chip:hover { border-color: var(--text-muted); }
@@ -380,25 +380,25 @@ body::before {
     100% { box-shadow: 0 0 8px rgba(0, 242, 254, 0.4); transform: scale(1); }
 }
 
-/* â”€â”€ ATRIBUTOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.attributes-section { display: flex; flex-direction: column; gap: 12px; }
+/* ── ATRIBUTOS ───────────────────────────────────────────────────────────── */
+.attributes-section { display: flex; flex-direction: column; gap: 8px; }
 
 .section-header-label {
     font-family: var(--font-hud);
     font-size: 8px; font-weight: 700;
     letter-spacing: 2px; color: var(--text-muted);
     border-bottom: 1px solid var(--border-glass);
-    padding-bottom: 6px;
+    padding-bottom: 3px;
 }
 
 /* Radar Chart */
 .radar-chart-wrapper {
     display: flex; justify-content: center; align-items: center;
-    padding: 8px 0;
+    padding: 2px 0;
     background: rgba(139,92,246,0.01);
     border: 1px solid rgba(139,92,246,0.07);
     border-radius: var(--radius-md);
-    min-height: 210px;
+    min-height: 170px;
 }
 #skills-radar-chart {
     display: block !important;
@@ -406,8 +406,8 @@ body::before {
 }
 
 /* 3 Barras de Atributo */
-.attr-bars { display: flex; flex-direction: column; gap: 10px; }
-.attr-bar-item { display: flex; flex-direction: column; gap: 5px; }
+.attr-bars { display: flex; flex-direction: column; gap: 6px; }
+.attr-bar-item { display: flex; flex-direction: column; gap: 2px; }
 .attr-bar-header {
     display: flex; align-items: center; gap: 6px;
     font-family: var(--font-hud); font-size: 8px;
@@ -461,7 +461,7 @@ body::before {
     display: flex; align-items: center; gap: 7px;
     background: none; border: none; outline: none;
     color: var(--text-muted);
-    padding: 16px 12px;
+    padding: 12px 12px;
     font-family: var(--font-hud);
     font-size: 10px; font-weight: 700;
     letter-spacing: 1.5px;
@@ -491,7 +491,7 @@ body::before {
 }
 
 /* Tab Content */
-.tab-content-container { flex: 1; overflow-y: auto; padding: 24px 32px; max-width: 100%; box-sizing: border-box; }
+.tab-content-container { flex: 1; overflow-y: auto; padding: 16px 24px; max-width: 100%; box-sizing: border-box; }
 .tab-content { display: none; padding: 0; animation: tabFade 0.25s var(--ease-out) forwards; }
 .tab-content.active { display: block; }
 @keyframes tabFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -644,25 +644,25 @@ body::before {
 }
 
 /* â”€â”€ TAVERNA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.rewards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.rewards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 
 .reward-card {
     background: var(--bg-card);
     border: 1px solid var(--border-glass);
     border-radius: var(--radius-lg);
-    padding: 20px;
+    padding: 12px 14px;
     display: flex; flex-direction: column; justify-content: space-between;
-    min-height: 130px;
+    min-height: 90px;
     transition: all 0.25s var(--ease-back);
 }
 .reward-card:hover {
     border-color: rgba(251,191,36,0.3);
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 12px 30px rgba(251,191,36,0.08);
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 8px 20px rgba(251,191,36,0.08);
 }
-.reward-card h3 { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.4; }
-.reward-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+.reward-card h3 { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+.reward-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
 .reward-cost { font-family: var(--font-hud); font-size: 12px; color: var(--neon-gold); }
 .btn-buy {
     font-family: var(--font-hud); font-size: 9px; font-weight: 700; letter-spacing: 1px;
@@ -1290,7 +1290,7 @@ body::before {
 .pwa-install-mobile-footer {
     display: flex;
     justify-content: center;
-    margin: 24px 0 12px 0;
+    margin: 12px 0 6px 0;
     padding: 0 8px;
 }
 .btn-pwa-install-footer {
@@ -1301,7 +1301,7 @@ body::before {
     font-size: 12px;
     letter-spacing: 1.5px;
     font-weight: bold;
-    padding: 14px 20px;
+    padding: 10px 16px;
     border-radius: 8px;
     cursor: pointer;
     width: 100%;
