@@ -772,8 +772,8 @@ body::before {
     animation: modalIn 0.3s var(--ease-back) forwards;
 }
 .modal-box h3 { font-family: var(--font-hud); font-size: 16px; color: var(--text-primary); letter-spacing: 2px; margin-bottom: 24px; }
-.close-modal-btn { position: absolute; top: 18px; right: 22px; font-size: 22px; color: var(--text-muted); cursor: pointer; transition: color 0.2s; line-height: 1; }
-.close-modal-btn:hover { color: var(--text-primary); }
+.close-modal-btn { position: absolute; top: 18px; right: 22px; font-size: 24px; color: var(--text-primary); cursor: pointer; transition: color 0.2s, transform 0.2s; line-height: 1; z-index: 10; }
+.close-modal-btn:hover { color: var(--neon-purple); transform: scale(1.1); }
 
 .form-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
 .form-field label { font-family: var(--font-hud); font-size: 9px; color: var(--text-muted); letter-spacing: 1px; }

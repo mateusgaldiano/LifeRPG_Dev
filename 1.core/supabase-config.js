@@ -1,158 +1,430 @@
-// ============================================================
-// supabase-config.js — LifeRPG OS v2.0
-// Cliente Supabase inicializado para uso global no app
-// ============================================================
+// ==========================================================================
+// SUPABASE CONFIG — LifeRPG OS v2.0
+// ==========================================================================
 
-const SUPABASE_URL  = 'https://ppsqvppnunzagxqruoqf.supabase.co';
-const SUPABASE_ANON = 'sb_publishable_nu9f4NzPEemdC4zm2bg1kw_88j7xeAz';
+const SUPABASE_URL = 'https://ppsqvppnunzagxqruoqf.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_nu9f4NzPEemdC4zm2bg1kw_88j7xeAz';
 
-// Inicializa o cliente global (SDK deve ser carregado antes via CDN no index.html)
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ── AUTH HELPERS ─────────────────────────────────────────────
+// --------------------------------------------------------------------------
+// MAPA DE SKINS — local skin id → UUID da tabela items
+// --------------------------------------------------------------------------
+const SKIN_ID_MAP = {
+  'default':            'b1a990aa-68f5-4e51-befa-baa6d9fb6f26',
+  'skin_shadow_master': '560e058f-3b14-47a1-8738-6225f56240b2',
+  'skin_mist_monarch':  '244e480e-7526-4fe8-8480-11567994819b',
+  'skin_arise_emperor': 'ec38df83-b822-4220-a816-aea29d83ac05',
+};
+// Mapa inverso (UUID → local id) para reconstruir o inventário local
+const SKIN_ID_MAP_REVERSE = Object.fromEntries(
+  Object.entries(SKIN_ID_MAP).map(([k, v]) => [v, k])
+);
 
-/** Retorna o usuário logado (auth.uid) ou null */
-async function getAuthUser() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    return user || null;
-}
+// --------------------------------------------------------------------------
+// SESSION ID — gerado uma vez por sessão de app, usado no analytics
+// --------------------------------------------------------------------------
+const _sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
 
-/** Login com Google OAuth */
-async function loginWithGoogle() {
-    const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.href }
+// --------------------------------------------------------------------------
+// ANALYTICS — substitui Firebase Analytics
+// Nunca deve quebrar o app, mesmo se Supabase estiver fora do ar
+// --------------------------------------------------------------------------
+window.trackEvent = function(eventName, params = {}) {
+  try {
+    supabaseClient.auth.getUser().then(({ data }) => {
+      const userId = data?.user ? window._currentUserDbId : null;
+      supabaseClient.from('analytics_events').insert({
+        user_id: userId,
+        event_name: eventName,
+        params: { ...params, app_version: '2.0' },
+        session_id: _sessionId,
+      }).then(({ error }) => {
+        if (error) console.warn('[Analytics]', error.message);
+      });
     });
-    if (error) console.error('[Auth] Erro no login Google:', error.message);
-}
+  } catch (e) {
+    // silencioso — analytics nunca quebra o app
+  }
+};
 
-/** Logout */
-async function logout() {
-    await supabaseClient.auth.signOut();
-}
+// --------------------------------------------------------------------------
+// ESTADO INTERNO
+// --------------------------------------------------------------------------
+window._currentUserDbId = null; // id (uuid) da linha em 'users', preenchido após login
 
-// ── CLOUD SAVE — USERS ───────────────────────────────────────
+// --------------------------------------------------------------------------
+// AUTH — login/logout com Google
+// --------------------------------------------------------------------------
+window.loginWithGoogle = async function() {
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+  });
+  if (error) console.error('[Supabase Auth]', error.message);
+};
 
-/**
- * Salva o gameState atual no Supabase.
- * Usa upsert: cria se não existir, atualiza se já existir.
- */
-async function saveToSupabase(gameState) {
-    const user = await getAuthUser();
-    if (!user) return false;
+window.logoutSupabase = async function() {
+  await supabaseClient.auth.signOut();
+  window._currentUserDbId = null;
+  // Atualizar UI para estado "Não sincronizado"
+  updateCloudStatusUI(false);
+};
 
-    const { error } = await supabaseClient
-        .from('users')
-        .upsert({
-            person_id:      user.id,
-            username:       gameState.playerName || 'Guerreiro',
-            level:          gameState.level      || 1,
-            xp:             gameState.xp         || 0,
-            gold:           gameState.gold        || 0,
-            streak:         gameState.streak      || 0,
-            rank:           getRankForLevel ? getRankForLevel(gameState.level) : 'E',
-            archetype:      gameState.archetype   || null,
-            active_skin:    gameState.inventory?.activeSkin || 'default',
-            active_title:   gameState.inventory?.activeTitle || null,
-            skills:         gameState.skills      || {},
-            settings:       { theme: gameState.theme || 'dark' },
-            last_active_at: new Date().toISOString(),
-        }, { onConflict: 'person_id' });
-
-    if (error) {
-        console.error('[Supabase] Erro ao salvar user:', error.message);
-        return false;
+// --------------------------------------------------------------------------
+// INIT — chamado no lugar de initFirebase()
+// --------------------------------------------------------------------------
+window.initSupabase = function() {
+  supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    if (session?.user) {
+      updateCloudStatusUI(true);
+      await ensureUserProfile(session.user);
+      await syncFromCloud();
+    } else {
+      updateCloudStatusUI(false);
     }
-    return true;
+  });
+
+  // Checar sessão existente ao carregar
+  supabaseClient.auth.getSession().then(({ data }) => {
+    if (data?.session?.user) {
+      updateCloudStatusUI(true);
+      ensureUserProfile(data.session.user).then(() => syncFromCloud());
+    }
+  });
+};
+
+function updateCloudStatusUI(online) {
+  const dot = document.querySelector('.cloud-dot');
+  const label = document.getElementById('cloud-status-label');
+  if (dot) dot.classList.toggle('online', online);
+  if (label) label.innerText = online ? 'ONLINE' : 'NÃO SINCRONIZADO';
+
+  document.getElementById('btn-cloud-login')?.style?.setProperty(
+    'display', online ? 'none' : 'block'
+  );
+  document.getElementById('btn-cloud-logout')?.style?.setProperty(
+    'display', online ? 'block' : 'none'
+  );
 }
 
-/**
- * Carrega os dados do jogador do Supabase.
- * Retorna null se não logado ou sem dados.
- */
-async function loadFromSupabase() {
-    const user = await getAuthUser();
-    if (!user) return null;
+// --------------------------------------------------------------------------
+// GARANTIR PERFIL — cria persons + users se for o primeiro login
+// --------------------------------------------------------------------------
+async function ensureUserProfile(authUser) {
+  // 1. Verificar/criar em persons
+  let { data: person } = await supabaseClient
+    .from('persons')
+    .select('id')
+    .eq('id', authUser.id)
+    .maybeSingle();
 
-    const { data, error } = await supabaseClient
-        .from('users')
-        .select('*')
-        .eq('person_id', user.id)
-        .single();
+  if (!person) {
+    await supabaseClient.from('persons').insert({
+      id: authUser.id,
+      email: authUser.email,
+      name: authUser.user_metadata?.full_name || authUser.email,
+    });
+  }
 
-    if (error || !data) return null;
-    return data;
+  // 2. Verificar/criar em users
+  let { data: userRow } = await supabaseClient
+    .from('users')
+    .select('id')
+    .eq('person_id', authUser.id)
+    .maybeSingle();
+
+  if (!userRow) {
+    // PRIMEIRO LOGIN — fazer upload do progresso local atual
+    const { data: newUser } = await supabaseClient
+      .from('users')
+      .insert({
+        person_id: authUser.id,
+        username: gameState.playerName || authUser.email,
+        level: gameState.level,
+        xp: gameState.xp,
+        gold: gameState.gold,
+        streak: gameState.streak,
+        rank: getRankForLevel(gameState.level),
+        archetype: gameState.archetype,
+        active_skin: gameState.inventory?.activeSkin || 'default',
+        skills: gameState.skills,
+        settings: {
+          achievements: gameState.achievements || [],
+          unlockedSkins: gameState.inventory?.unlockedSkins || ['default'],
+        },
+        last_active_at: new Date().toISOString(),
+      })
+      .select('id')
+      .single();
+
+    window._currentUserDbId = newUser.id;
+
+    // Upload de quests e history existentes localmente
+    await syncQuestsToSupabase();
+    await saveAllHistoryToSupabase();
+    await syncInventoryToSupabase();
+
+  } else {
+    window._currentUserDbId = userRow.id;
+  }
 }
 
-// ── CLOUD SAVE — HISTORY ─────────────────────────────────────
+// --------------------------------------------------------------------------
+// SYNC FROM CLOUD — chamado após login, resolve conflitos
+// --------------------------------------------------------------------------
+window.syncFromCloud = async function() {
+  if (!window._currentUserDbId) return;
 
-/**
- * Salva o registro de performance do dia no Supabase.
- */
-async function saveHistoryToSupabase(userId, historyEntry) {
-    const { error } = await supabaseClient
-        .from('history')
-        .upsert({
-            user_id:         userId,
-            date:            historyEntry.date,
-            xp_earned:       historyEntry.xpEarned      || 0,
-            gold_earned:     historyEntry.goldEarned     || 0,
-            quests_done:     historyEntry.questsDone     || 0,
-            quests_total:    historyEntry.questsTotal    || 0,
-            status:          historyEntry.status         || 'partial',
-            penalty_applied: historyEntry.penaltyApplied || false,
-            skills_xp:       historyEntry.skillsXp       || {},
-        }, { onConflict: 'user_id,date' });
+  const { data: cloudUser } = await supabaseClient
+    .from('users')
+    .select('*')
+    .eq('id', window._currentUserDbId)
+    .single();
 
-    if (error) console.error('[Supabase] Erro ao salvar history:', error.message);
+  if (!cloudUser) return;
+
+  const cloudIsNewer =
+    cloudUser.level > gameState.level ||
+    (cloudUser.level === gameState.level && cloudUser.streak > gameState.streak);
+
+  if (cloudIsNewer) {
+    // Nuvem ganha — sobrescrever estado local
+    gameState.level     = cloudUser.level;
+    gameState.xp        = cloudUser.xp;
+    gameState.gold      = cloudUser.gold;
+    gameState.streak    = cloudUser.streak;
+    gameState.archetype = cloudUser.archetype;
+    gameState.skills    = cloudUser.skills;
+    gameState.playerName = cloudUser.username;
+
+    gameState.achievements = cloudUser.settings?.achievements || [];
+
+    await loadQuestsFromSupabase();
+    await loadHistoryFromSupabase();
+    await loadInventoryFromSupabase();
+
+    saveGameData(); // persiste no localStorage também
+    updateUI();
+  } else {
+    // Local ganha — subir para a nuvem
+    await saveToSupabase();
+    await syncQuestsToSupabase();
+    await saveAllHistoryToSupabase();
+    await syncInventoryToSupabase();
+  }
+};
+
+// --------------------------------------------------------------------------
+// SAVE TO CLOUD — chamado a cada saveGameData(), se logado
+// --------------------------------------------------------------------------
+window.saveToSupabase = async function() {
+  if (!window._currentUserDbId) return;
+
+  const { error } = await supabaseClient
+    .from('users')
+    .update({
+      username:    gameState.playerName,
+      level:       gameState.level,
+      xp:          gameState.xp,
+      gold:        gameState.gold,
+      streak:      gameState.streak,
+      rank:        getRankForLevel(gameState.level),
+      archetype:   gameState.archetype,
+      active_skin: gameState.inventory?.activeSkin || 'default',
+      skills:      gameState.skills,
+      settings: {
+        achievements: gameState.achievements || [],
+        unlockedSkins: gameState.inventory?.unlockedSkins || ['default'],
+      },
+      last_active_at: new Date().toISOString(),
+    })
+    .eq('id', window._currentUserDbId);
+
+  if (error) console.error('[Supabase] saveToSupabase:', error.message);
+};
+
+// --------------------------------------------------------------------------
+// QUESTS — sync bidirecional usando local_id
+// --------------------------------------------------------------------------
+async function syncQuestsToSupabase() {
+  if (!window._currentUserDbId) return;
+
+  const allQuests = [
+    ...(gameState.quests || []).map(q => ({ ...q, type: 'daily' })),
+    ...(gameState.sideQuests || []).map(q => ({ ...q, type: 'side' })),
+  ];
+
+  const rows = allQuests.map(q => ({
+    user_id: window._currentUserDbId,
+    local_id: q.id,
+    title: q.title,
+    skill: q.skill,
+    type: q.type,
+    difficulty: q.difficulty || 'medium',
+    xp: q.xp,
+    gold: q.gold,
+    emoji: q.emoji || q.icon,
+    completed: !!q.completed,
+    completed_at: q.completed ? new Date().toISOString() : null,
+    from_library: !!q.fromLibrary,
+    recurring: q.type === 'daily',
+    current: q.current ?? null,
+    target: q.target ?? null,
+  }));
+
+  if (rows.length === 0) return;
+
+  const { error } = await supabaseClient
+    .from('quests')
+    .upsert(rows, { onConflict: 'user_id,local_id' });
+
+  if (error) console.error('[Supabase] syncQuestsToSupabase:', error.message);
 }
 
-/**
- * Carrega o histórico dos últimos N dias do Supabase.
- */
-async function loadHistoryFromSupabase(userId, days = 365) {
-    const since = new Date();
-    since.setDate(since.getDate() - days);
+window.loadQuestsFromSupabase = async function() {
+  if (!window._currentUserDbId) return;
 
-    const { data, error } = await supabaseClient
-        .from('history')
-        .select('*')
-        .eq('user_id', userId)
-        .gte('date', since.toISOString().split('T')[0])
-        .order('date', { ascending: false });
+  const { data, error } = await supabaseClient
+    .from('quests')
+    .select('*')
+    .eq('user_id', window._currentUserDbId);
 
-    if (error) { console.error('[Supabase] Erro ao carregar history:', error.message); return []; }
-    return data || [];
-}
+  if (error || !data) return;
 
-// ── CLOUD SAVE — QUESTS ──────────────────────────────────────
-
-/**
- * Sincroniza as quests do jogador com o Supabase.
- */
-async function saveQuestsToSupabase(userId, quests) {
-    if (!quests || quests.length === 0) return;
-
-    const rows = quests.map(q => ({
-        id:           q.id,
-        user_id:      userId,
-        title:        q.title,
-        skill:        q.skill,
-        type:         q.type       || 'daily',
-        difficulty:   q.difficulty || 'medium',
-        xp:           q.xp         || 0,
-        gold:         q.gold       || 0,
-        emoji:        q.emoji      || '⚔️',
-        completed:    q.completed  || false,
-        from_library: q.fromLibrary || false,
-        recurring:    q.type === 'daily',
+  gameState.quests = data
+    .filter(q => q.type === 'daily')
+    .map(q => ({
+      id: q.local_id,
+      title: q.title,
+      skill: q.skill,
+      type: 'daily',
+      difficulty: q.difficulty,
+      xp: q.xp,
+      gold: q.gold,
+      emoji: q.emoji,
+      icon: q.emoji,
+      completed: q.completed,
+      fromLibrary: q.from_library,
+      current: q.current,
+      target: q.target,
     }));
 
-    const { error } = await supabaseClient
-        .from('quests')
-        .upsert(rows, { onConflict: 'id' });
+  gameState.sideQuests = data
+    .filter(q => q.type === 'side')
+    .map(q => ({
+      id: q.local_id,
+      title: q.title,
+      skill: q.skill,
+      type: 'side',
+      difficulty: q.difficulty,
+      xp: q.xp,
+      gold: q.gold,
+      emoji: q.emoji,
+      icon: q.emoji,
+      completed: q.completed,
+      fromLibrary: q.from_library,
+    }));
+};
 
-    if (error) console.error('[Supabase] Erro ao salvar quests:', error.message);
+// --------------------------------------------------------------------------
+// HISTORY — sync em lote
+// --------------------------------------------------------------------------
+async function saveAllHistoryToSupabase() {
+  if (!window._currentUserDbId) return;
+
+  const historyEntries = Object.entries(gameState.history || {});
+  if (historyEntries.length === 0) return;
+
+  const rows = historyEntries.map(([date, entry]) => ({
+    user_id: window._currentUserDbId,
+    date: date,
+    xp_earned: entry.xpEarned || 0,
+    gold_earned: entry.goldEarned || 0,
+    quests_done: entry.questsDone || 0,
+    quests_total: entry.questsTotal || 0,
+    status: entry.status || 'partial',
+    penalty_applied: !!entry.penaltyApplied,
+    skills_xp: entry.skillsXp || {},
+  }));
+
+  const { error } = await supabaseClient
+    .from('history')
+    .upsert(rows, { onConflict: 'user_id,date' });
+
+  if (error) console.error('[Supabase] saveAllHistoryToSupabase:', error.message);
 }
 
-console.log('[Supabase] Cliente inicializado ✓');
+window.loadHistoryFromSupabase = async function() {
+  if (!window._currentUserDbId) return;
+
+  const { data, error } = await supabaseClient
+    .from('history')
+    .select('*')
+    .eq('user_id', window._currentUserDbId);
+
+  if (error || !data) return;
+
+  gameState.history = {};
+  data.forEach(row => {
+    gameState.history[row.date] = {
+      xpEarned: row.xp_earned,
+      goldEarned: row.gold_earned,
+      questsDone: row.quests_done,
+      questsTotal: row.quests_total,
+      status: row.status,
+      penaltyApplied: row.penalty_applied,
+      skillsXp: row.skills_xp,
+    };
+  });
+};
+
+// --------------------------------------------------------------------------
+// INVENTORY — sync usando SKIN_ID_MAP
+// --------------------------------------------------------------------------
+async function syncInventoryToSupabase() {
+  if (!window._currentUserDbId) return;
+
+  const unlockedSkins = gameState.inventory?.unlockedSkins || ['default'];
+  const activeSkin = gameState.inventory?.activeSkin || 'default';
+
+  const rows = unlockedSkins
+    .filter(skinKey => SKIN_ID_MAP[skinKey])
+    .map(skinKey => ({
+      user_id: window._currentUserDbId,
+      item_id: SKIN_ID_MAP[skinKey],
+      equipped: skinKey === activeSkin,
+    }));
+
+  if (rows.length === 0) return;
+
+  const { error } = await supabaseClient
+    .from('inventory')
+    .upsert(rows, { onConflict: 'user_id,item_id' });
+
+  if (error) console.error('[Supabase] syncInventoryToSupabase:', error.message);
+}
+
+window.loadInventoryFromSupabase = async function() {
+  if (!window._currentUserDbId) return;
+
+  const { data, error } = await supabaseClient
+    .from('inventory')
+    .select('item_id, equipped')
+    .eq('user_id', window._currentUserDbId);
+
+  if (error || !data) return;
+
+  const unlockedSkins = data
+    .map(row => SKIN_ID_MAP_REVERSE[row.item_id])
+    .filter(Boolean);
+
+  const equippedRow = data.find(row => row.equipped);
+  const activeSkin = equippedRow
+    ? SKIN_ID_MAP_REVERSE[equippedRow.item_id]
+    : 'default';
+
+  if (!gameState.inventory) gameState.inventory = {};
+  gameState.inventory.unlockedSkins = unlockedSkins.length ? unlockedSkins : ['default'];
+  gameState.inventory.activeSkin = activeSkin;
+};
+

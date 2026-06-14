@@ -697,37 +697,6 @@
                     </div>
                 </div>
 
-                <!-- Backup de Dados -->
-                <div class="settings-group">
-                    <div class="settings-group-title">MEMÓRIA & BACKUP (SALVAR BASES)</div>
-                    <p class="settings-group-desc">Exportar seu progresso para um arquivo ou importar de um backup.</p>
-                    <div class="backup-actions">
-                        <button id="btn-export-save" class="btn-submit btn-backup-action">💾 EXPORTAR SAVE</button>
-                        
-                        <label for="import-save-file" class="btn-submit btn-secondary btn-backup-action label-file-import">
-                            📥 IMPORTAR SAVE
-                        </label>
-                        <input type="file" id="import-save-file" accept=".json" style="display: none;">
-                    </div>
-                </div>
-
-                <!-- Mentor IA Config -->
-                <div class="settings-group">
-                    <div class="settings-group-title">🍵 MENTE DO MENTOR (IA CLAUDE)</div>
-                    <p class="settings-group-desc">Insira suas configurações da API do Claude para conversar com o Tio Iroh no chat do Mentor.</p>
-                    <div class="form-field" style="margin-bottom:12px;">
-                        <label for="settings-claude-key" style="display:block; font-size:10px; font-family:var(--font-hud); color:var(--text-muted); margin-bottom:6px;">API KEY DO CLAUDE (ANTHROPIC)</label>
-                        <input type="password" id="settings-claude-key" placeholder="sk-ant-..." style="width:100%; background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 16px; border-radius:var(--radius-md); font-size:13px; outline:none;">
-                    </div>
-                    <div class="form-field" style="margin-bottom:14px;">
-                        <label for="settings-claude-url" style="display:block; font-size:10px; font-family:var(--font-hud); color:var(--text-muted); margin-bottom:6px;">CORS PROXY / GATEWAY URL (OPCIONAL)</label>
-                        <input type="text" id="settings-claude-url" placeholder="https://api.anthropic.com/v1/messages" style="width:100%; background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 16px; border-radius:var(--radius-md); font-size:13px; outline:none;">
-                    </div>
-                    <div class="settings-actions-row">
-                        <button id="btn-save-claude" class="btn-submit" style="width:100%;">SALVAR CONFIGURAÇÕES DO MENTOR</button>
-                    </div>
-                </div>
-
                 <!-- Hard Reset -->
                 <div class="settings-group" style="margin-top: 30px; border-top: 1px solid var(--border-glass); padding-top: 20px;">
                     <div class="settings-group-title" style="color: var(--neon-red);">🔥 DESTRUIÇÃO DO SISTEMA (RESET GERAL)</div>
@@ -736,6 +705,9 @@
                         <button id="btn-hard-reset" class="btn-submit" style="background: var(--neon-red); box-shadow: none;">☠️ APAGAR TUDO E RECOMEÇAR</button>
                     </div>
                 </div>
+
+                <!-- Botão Fechar Inferior -->
+                <button id="btn-close-settings-bottom" class="btn-submit btn-secondary" style="width: 100%; margin-top: 15px;">FECHAR</button>
             </div>
         </div>
 
@@ -894,12 +866,6 @@
         </div>
     </div>
 
-
-    <!-- Firebase (mantido para Analytics) -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-    <script src="1.core/firebase-config.js"></script>
 
     <!-- Supabase SDK v2 (Cloud Save principal) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

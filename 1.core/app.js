@@ -1121,7 +1121,7 @@ function checkFeatureUnlocks() {
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     loadGameData();
-    if (typeof initFirebase === 'function') initFirebase();
+    if (typeof initSupabase === 'function') initSupabase();
     initTabs();
     renderQuests();
     renderRewards();
@@ -3088,6 +3088,7 @@ function setupSettingsListeners() {
     const modalSettings = document.getElementById('modal-settings');
     const btnOpenSettings = document.getElementById('btn-open-settings');
     const btnCloseSettings = document.getElementById('close-settings-modal');
+    const btnCloseSettingsBottom = document.getElementById('btn-close-settings-bottom');
 
     if (btnOpenSettings && modalSettings && btnCloseSettings) {
         btnOpenSettings.addEventListener('click', () => {
@@ -3100,26 +3101,24 @@ function setupSettingsListeners() {
             modalSettings.style.display = 'none';
         });
 
-        // Salvar configurações do Claude IA
-        const btnSaveClaude = document.getElementById('btn-save-claude');
-        if (btnSaveClaude) {
-            btnSaveClaude.addEventListener('click', () => {
-                const keyInput = document.getElementById('settings-claude-key');
-                const urlInput = document.getElementById('settings-claude-url');
-                if (keyInput && urlInput) {
-                    localStorage.setItem('lifeRPG_claude_key', keyInput.value.trim());
-                    localStorage.setItem('lifeRPG_claude_url', urlInput.value.trim());
-                    showSystemToast('🍵 Configurações do Mentor salvas com sucesso!');
-                    
-                    // UI feedback
-                    const originalText = btnSaveClaude.innerText;
-                    btnSaveClaude.innerText = '✓ SALVO';
-                    btnSaveClaude.style.background = 'linear-gradient(90deg, var(--neon-green), #34d399)';
-                    setTimeout(() => {
-                        btnSaveClaude.innerText = originalText;
-                        btnSaveClaude.style.background = '';
-                    }, 1500);
-                }
+        if (btnCloseSettingsBottom) {
+            btnCloseSettingsBottom.addEventListener('click', () => {
+                modalSettings.style.display = 'none';
+            });
+        }
+
+        // Supabase Sync Buttons
+        const btnLogin = document.getElementById('btn-cloud-login');
+        if (btnLogin) {
+            btnLogin.addEventListener('click', () => {
+                if (typeof window.loginWithGoogle === 'function') window.loginWithGoogle();
+            });
+        }
+
+        const btnLogout = document.getElementById('btn-cloud-logout');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', () => {
+                if (typeof window.logoutSupabase === 'function') window.logoutSupabase();
             });
         }
 
@@ -3258,13 +3257,6 @@ function loadSettingsToUI() {
     document.getElementById('notif-evening-hour').value = times.eveningHour;
     document.getElementById('notif-evening-min').value = pad(times.eveningMin);
 
-    // Claude IA credentials loading
-    const key = localStorage.getItem('lifeRPG_claude_key') || '';
-    const url = localStorage.getItem('lifeRPG_claude_url') || 'https://api.anthropic.com/v1/messages';
-    const keyInput = document.getElementById('settings-claude-key');
-    const urlInput = document.getElementById('settings-claude-url');
-    if (keyInput) keyInput.value = key;
-    if (urlInput) urlInput.value = url;
 }
 
 // Atualiza a badge visual de permissão
@@ -3580,107 +3572,11 @@ function renderGlobalDashboard() {
 }
 
 // ==========================================================================
-// CLOUD SAVE (FIREBASE)
+// CLOUD SAVE (SUPABASE)
 // ==========================================================================
-let db = null;
-let currentUser = null;
-
-function initFirebase() {
-    try {
-        if (typeof firebase === 'undefined') return;
-        db = firebase.firestore();
-        firebase.auth().onAuthStateChanged(async (user) => {
-            currentUser = user;
-            updateCloudUI(user);
-            if (user) {
-                await syncFromCloud();
-            }
-        });
-
-        // Listeners UI
-        const btnLogin = document.getElementById('btn-cloud-login');
-        const btnLogout = document.getElementById('btn-cloud-logout');
-        
-        if (btnLogin) {
-            btnLogin.addEventListener('click', async () => {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                try {
-                    await firebase.auth().signInWithPopup(provider);
-                } catch(e) {
-                    console.warn('[Cloud] Erro no login:', e);
-                    showSystemToast('⚠️ Erro ao conectar com Google.');
-                }
-            });
-        }
-        
-        if (btnLogout) {
-            btnLogout.addEventListener('click', async () => {
-                await firebase.auth().signOut();
-                currentUser = null;
-                showSystemToast('Sessão encerrada.');
-            });
-        }
-    } catch(e) {
-        console.warn('[Cloud] Firebase não disponível:', e);
-    }
-}
-
 async function saveToCloud() {
-    if (!db || !currentUser) return;
-    try {
-        const payload = { ...gameState, _savedAt: Date.now(), _version: 3 };
-        await db.collection('saves').doc(currentUser.uid).set(payload);
-    } catch(e) {
-        console.warn('[Cloud] Erro ao salvar:', e);
-    }
-}
-
-async function syncFromCloud() {
-    if (!db || !currentUser) return;
-    try {
-        const doc = await db.collection('saves').doc(currentUser.uid).get();
-        if (!doc.exists) {
-            // Primeiro login: sobe o save local
-            await saveToCloud();
-            showSystemToast('☁️ *SAVE ENVIADO PARA A NUVEM!* Sua conta foi criada.');
-            return;
-        }
-        const cloudState = doc.data();
-        const localLevel = gameState.level || 1;
-        const cloudLevel = cloudState.level || 1;
-        const localStreak = gameState.streak || 0;
-        const cloudStreak = cloudState.streak || 0;
-
-        const cloudWins = cloudLevel > localLevel || (cloudLevel === localLevel && cloudStreak > localStreak);
-
-        if (cloudWins) {
-            Object.assign(gameState, cloudState);
-            saveGameData(); 
-            updateUI();
-            showSystemToast('🔄 *SAVE SINCRONIZADO!* Progresso atualizado da nuvem.');
-        } else {
-            await saveToCloud();
-        }
-    } catch(e) {
-        console.warn('[Cloud] Erro ao sincronizar:', e);
-    }
-}
-
-function updateCloudUI(user) {
-    const el = document.getElementById('cloud-sync-status');
-    const btnLogin = document.getElementById('btn-cloud-login');
-    const btnLogout = document.getElementById('btn-cloud-logout');
-    if (!el) return;
-    
-    if (user) {
-        const name = user.displayName || (user.isAnonymous ? 'Anônimo' : user.email);
-        el.innerHTML = `<span class="cloud-dot online"></span> Online`;
-        if (btnLogin) btnLogin.style.display = 'none';
-        if (btnLogout) btnLogout.style.display = 'inline-flex';
-    } else {
-        el.innerHTML = `<span class="cloud-dot offline"></span> Não sincronizado`;
-        if (btnLogin) btnLogin.style.display = 'inline-flex';
-        if (btnLogout) btnLogout.style.display = 'none';
+    if (typeof window.saveToSupabase === 'function' && window._currentUserDbId) {
+        await window.saveToSupabase();
     }
 }
 
