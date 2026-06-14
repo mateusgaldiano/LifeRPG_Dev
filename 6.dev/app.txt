@@ -1889,10 +1889,13 @@ function deductSkillXP(skillType) {
 }
 
 function renderQuests() {
-    const dailyContainer = document.getElementById('daily-quests-list');
-    const sideContainer  = document.getElementById('side-quests-list');
-    dailyContainer.innerHTML = '';
-    sideContainer.innerHTML  = '';
+    const colWillpower = document.getElementById('quests-list-willpower');
+    const colIntellect = document.getElementById('quests-list-intellect');
+    const colHealth    = document.getElementById('quests-list-health');
+    
+    if (colWillpower) colWillpower.innerHTML = '';
+    if (colIntellect) colIntellect.innerHTML = '';
+    if (colHealth) colHealth.innerHTML = '';
 
     // Renderiza Masmorras (se houver ativa)
     const dungeonBanner = document.getElementById('dungeon-active-banner');
@@ -1913,7 +1916,20 @@ function renderQuests() {
         dungeonBanner.style.display = 'none';
     }
 
-    //    Dungeon ativa                                                     
+    // Helper para mapeamento de skills para atributos/colunas
+    const skillToMainAttr = {
+        mental: 'willpower', routine: 'willpower',
+        wisdom: 'intellect', productivity: 'intellect',
+        physical: 'health', social: 'health'
+    };
+    function getContainer(skill) {
+        const attr = skillToMainAttr[skill || 'productivity'] || 'intellect';
+        if (attr === 'willpower') return colWillpower;
+        if (attr === 'health') return colHealth;
+        return colIntellect;
+    }
+
+    // Dungeon ativa
     checkDungeonExpiry();
     const _d = gameState.activeDungeon;
     if (_d && !_d.completed) {
@@ -1926,7 +1942,7 @@ function renderQuests() {
 
         const _dc = document.createElement('div');
         _dc.className = `quest-card dungeon-card${_urgent ? ' dungeon-urgent' : ''}`;
-        _dc.setAttribute('data-skill', _d.skill);
+        _dc.setAttribute('data-skill', _d.skill || 'productivity');
         _dc.innerHTML = `
             <div class="quest-details">
                 <div class="quest-icon">⚔️</div>
@@ -1942,60 +1958,60 @@ function renderQuests() {
             </div>
             <button class="quest-complete-btn dungeon-btn" data-dungeon="true">✓</button>
         `;
-        sideContainer.appendChild(_dc);
+        const container = getContainer(_d.skill);
+        if (container) container.appendChild(_dc);
     }
-    //  fim dungeon 
 
-    //  Daily Quests 
-    gameState.quests.forEach(quest => {
-        const card = document.createElement('div');
-        card.className = `quest-card ${quest.completed ? 'completed' : ''}`;
-        card.setAttribute('data-skill', quest.skill || 'routine');
+    // Daily Quests
+    if (gameState.quests) {
+        gameState.quests.forEach(quest => {
+            const card = document.createElement('div');
+            card.className = `quest-card ${quest.completed ? 'completed' : ''}`;
+            card.setAttribute('data-skill', quest.skill || 'routine');
 
-        const diffMap = { routine: 'RANK E', physical: 'RANK E', wisdom: 'RANK D', mental: 'RANK D', productivity: 'RANK C', social: 'RANK D' };
-        const diffLabel = diffMap[quest.skill] || 'RANK E';
+            const diffMap = { routine: 'RANK E', physical: 'RANK E', wisdom: 'RANK D', mental: 'RANK D', productivity: 'RANK C', social: 'RANK D' };
+            const diffLabel = diffMap[quest.skill] || 'RANK E';
 
-        let extraHTML = '';
-        if (quest.current !== undefined && quest.target !== undefined) {
-            extraHTML = `<div class="water-adjust-row">
-                <button class="water-btn btn-minus" data-id="${quest.id}">−</button>
-                <span class="water-val">${quest.current || 0}/${quest.target} copos</span>
-                <button class="water-btn btn-plus" data-id="${quest.id}">+</button>
-            </div>`;
-        }
+            let extraHTML = '';
+            if (quest.current !== undefined && quest.target !== undefined) {
+                extraHTML = `<div class="water-adjust-row">
+                    <button class="water-btn btn-minus" data-id="${quest.id}">−</button>
+                    <span class="water-val">${quest.current || 0}/${quest.target} copos</span>
+                    <button class="water-btn btn-plus" data-id="${quest.id}">+</button>
+                </div>`;
+            }
 
-        card.innerHTML = `
-            <button class="quest-remove-btn"
-                    data-id="${quest.id}"
-                    onclick="confirmRemoveQuest('${quest.id}', '${quest.title.replace(/'/g, "\\'")}')">
-                ✕
-            </button>
-            <div class="quest-details">
-                <div class="quest-icon">${quest.icon}</div>
-                <div class="quest-title-wrap">
-                    <span class="quest-title">${quest.title}</span>
-                    <div class="quest-payouts">
-                        <span class="diff-badge">${diffLabel}</span>
-                        <span class="payout-xp">+${quest.xp} XP</span>
-                        <span class="payout-gold">+${quest.gold} 🪙</span>
+            card.innerHTML = `
+                <button class="quest-remove-btn"
+                        data-id="${quest.id}"
+                        onclick="confirmRemoveQuest('${quest.id}', '${quest.title.replace(/'/g, "\\'")}')">
+                    ✕
+                </button>
+                <div class="quest-details">
+                    <div class="quest-icon">${quest.icon || '📅'}</div>
+                    <div class="quest-title-wrap">
+                        <span class="quest-title">${quest.title}</span>
+                        <div class="quest-payouts">
+                            <span class="diff-badge">${diffLabel}</span>
+                            <span class="payout-xp">+${quest.xp} XP</span>
+                            <span class="payout-gold">+${quest.gold} 🪙</span>
+                        </div>
+                        ${extraHTML}
                     </div>
-                    ${extraHTML}
                 </div>
-            </div>
-            <button class="quest-complete-btn" data-id="${quest.id}">✓</button>
-        `;
-        dailyContainer.appendChild(card);
-    });
+                <button class="quest-complete-btn" data-id="${quest.id}">✓</button>
+            `;
+            const container = getContainer(quest.skill || 'routine');
+            if (container) container.appendChild(card);
+        });
+    }
 
-    //  Side Quests 
-    const activeDungeon = gameState.activeDungeon;
-    if (gameState.sideQuests.length === 0 && !(activeDungeon && !activeDungeon.completed)) {
-        sideContainer.innerHTML = `<div style="text-align:center;color:rgba(15,31,53,0.35);font-size:12px;padding:24px;font-family:var(--font-hud);letter-spacing:1px">NENHUMA MISSÃO ATIVA</div>`;
-    } else {
+    // Side Quests
+    if (gameState.sideQuests) {
         gameState.sideQuests.forEach(quest => {
             const card = document.createElement('div');
             card.className = `quest-card ${quest.completed ? 'completed' : ''}`;
-            card.setAttribute('data-skill', 'productivity');
+            card.setAttribute('data-skill', quest.skill || 'productivity');
             const diffLabel = quest.difficulty === 'hard' ? 'RANK C' : quest.difficulty === 'medium' ? 'RANK D' : 'RANK E';
             card.innerHTML = `
                 <button class="quest-remove-btn"
@@ -2016,9 +2032,21 @@ function renderQuests() {
                 </div>
                 <button class="quest-complete-btn" data-id="${quest.id}">✓</button>
             `;
-            sideContainer.appendChild(card);
+            const container = getContainer(quest.skill || 'productivity');
+            if (container) container.appendChild(card);
         });
     }
+
+    // Mensagem de placeholder se coluna estiver vazia
+    [
+        { el: colWillpower, label: 'NENHUMA MISSÃO ATIVA' },
+        { el: colIntellect, label: 'NENHUMA MISSÃO ATIVA' },
+        { el: colHealth, label: 'NENHUMA MISSÃO ATIVA' }
+    ].forEach(colObj => {
+        if (colObj.el && colObj.el.children.length === 0) {
+            colObj.el.innerHTML = `<div style="text-align:center;color:rgba(15,31,53,0.35);font-size:11px;padding:20px;font-family:var(--font-hud);letter-spacing:1px">${colObj.label}</div>`;
+        }
+    });
 }
 
 // Renderiza a Taverna (Recompensas)
@@ -2646,8 +2674,9 @@ document.getElementById('close-quote-modal')?.addEventListener('click', () => {
 // ==========================================================================
 function setupEventListeners() {
     // Quests
-    document.getElementById('daily-quests-list')?.addEventListener('click', handleQuestAction);
-    document.getElementById('side-quests-list')?.addEventListener('click', handleQuestAction);
+    document.getElementById('quests-list-willpower')?.addEventListener('click', handleQuestAction);
+    document.getElementById('quests-list-intellect')?.addEventListener('click', handleQuestAction);
+    document.getElementById('quests-list-health')?.addEventListener('click', handleQuestAction);
 
     // Taverna
     // Modais

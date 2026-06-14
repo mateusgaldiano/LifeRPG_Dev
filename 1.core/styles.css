@@ -496,15 +496,40 @@ body::before {
 .tab-content.active { display: block; }
 @keyframes tabFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-/* Quests Split Layout (2 Columns in Desktop) */
-.quests-split-layout {
+/* Quests Three Columns Layout (Desktop) */
+.quests-three-columns {
     display: flex;
-    gap: 24px;
+    gap: 20px;
     align-items: flex-start;
+    margin-bottom: 24px;
 }
-.quests-column {
+.quest-attr-column {
     flex: 1;
     min-width: 0;
+}
+.quest-column-header {
+    border-bottom: 1px solid var(--border-glass);
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+}
+.quest-column-header h3 {
+    font-family: var(--font-hud);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    margin: 0;
+}
+.willpower-col .quest-column-header h3 { color: var(--neon-purple); }
+.intellect-col .quest-column-header h3 { color: #38bdf8; }
+.health-col .quest-column-header h3 { color: var(--neon-orange); }
+
+.quests-actions-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-glass);
 }
 
 /* Content Headers */
@@ -1298,37 +1323,35 @@ body::before {
 /* ── MOBILE SCROLL OVERRIDES ────────────────────────────────────────────── */
 
 /* ── PWA FOOTER INSTALL BUTTON ── */
-.pwa-install-mobile-footer {
-    display: flex;
-    justify-content: center;
-    margin: 12px 0 6px 0;
-    padding: 0 8px;
+.pwa-install-sidebar {
+    margin-top: 10px;
+    padding-top: 10px;
+    width: 100%;
 }
-.btn-pwa-install-footer {
+.btn-pwa-install-sidebar-btn {
     background: linear-gradient(90deg, rgba(123, 104, 238, 0.12) 0%, rgba(123, 104, 238, 0.04) 100%);
     border: 1px dashed #7B68EE;
     color: #7B68EE;
     font-family: var(--font-hud);
-    font-size: 12px;
-    letter-spacing: 1.5px;
+    font-size: 10px;
+    letter-spacing: 1px;
     font-weight: bold;
-    padding: 10px 16px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
     cursor: pointer;
     width: 100%;
-    max-width: 420px;
     display: block; /* Visible by default, hidden by JS if already installed */
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     text-transform: uppercase;
     box-shadow: 0 0 10px rgba(123, 104, 238, 0.05);
+    text-align: center;
 }
-.btn-pwa-install-footer:hover, .btn-pwa-install-footer:active {
+.btn-pwa-install-sidebar-btn:hover, .btn-pwa-install-sidebar-btn:active {
     background: linear-gradient(90deg, rgba(123, 104, 238, 0.22) 0%, rgba(123, 104, 238, 0.06) 100%);
     border-style: solid;
     border-color: #7B68EE;
     color: var(--text-primary);
     box-shadow: 0 0 15px rgba(123, 104, 238, 0.2);
-    transform: translateY(-2px);
 }
 #btn-add-sidequest {
     background: linear-gradient(90deg, #6B5ECD, #7B68EE) !important;
@@ -2136,14 +2159,14 @@ body::before {
    ========================================================================== */
 @media (max-width: 1023px) {
 
-  .quests-split-layout {
+  .quests-three-columns {
     display: block !important;
   }
-  .quests-column {
+  .quest-attr-column {
     width: 100% !important;
     margin-bottom: 20px;
   }
-  .quests-column:last-child {
+  .quest-attr-column:last-child {
     margin-bottom: 0;
   }
 

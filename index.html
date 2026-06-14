@@ -154,6 +154,13 @@
                 <div id="rank-perks-container" style="display:none; flex-wrap:wrap; gap:4px; margin-top:6px;"></div>
             </div>
 
+            <!-- Botão de Instalação do PWA na Sidebar -->
+            <div class="pwa-install-sidebar">
+                <button id="btn-pwa-install-footer" class="btn-pwa-install-sidebar-btn">
+                    📥 INSTALAR APLICATIVO
+                </button>
+            </div>
+
         </aside>
 
         <!-- ═══ PAINEL PRINCIPAL ═══ -->
@@ -195,35 +202,42 @@
                     <!-- Dungeon Ativa -->
                     <div id="dungeon-active-banner" style="display:none; margin-bottom: 20px;"></div>
                     
-                    <div class="quests-split-layout">
-                        <!-- Coluna Esquerda: Missões Diárias -->
-                        <div class="quests-column">
-                            <div class="quest-section-header">
-                                <div>
-                                    <h2>Missões Diárias</h2>
-                                    <p style="color: var(--text-muted); font-size: 0.7rem; margin-top: 2px;">Hábitos gerados pelo seu nível para manter sua rotina diária.</p>
-                                </div>
+                    <div class="quests-three-columns">
+                        <!-- Coluna: Força de Vontade -->
+                        <div class="quest-attr-column willpower-col">
+                            <div class="quest-column-header">
+                                <h3>FORÇA DE VONTADE</h3>
                             </div>
-                            <div class="quest-list" id="daily-quests-list">
-                                <!-- Quests renderizadas via JS -->
+                            <div class="quest-list" id="quests-list-willpower">
+                                <!-- Rendered via JS -->
                             </div>
                         </div>
 
-                        <!-- Coluna Direita: Side Quests -->
-                        <div class="quests-column">
-                            <div class="quest-section-header">
-                                <div>
-                                    <h2>Side Quests</h2>
-                                    <p style="color: var(--text-muted); font-size: 0.7rem; margin-top: 2px;">Objetivos secundários criados por você para acelerar sua evolução.</p>
-                                </div>
+                        <!-- Coluna: Intelecto -->
+                        <div class="quest-attr-column intellect-col">
+                            <div class="quest-column-header">
+                                <h3>INTELECTO</h3>
                             </div>
-                            <div class="quest-list" id="side-quests-list">
-                                <!-- Side Quests renderizadas via JS -->
+                            <div class="quest-list" id="quests-list-intellect">
+                                <!-- Rendered via JS -->
                             </div>
-
-                            <button class="btn-submit" id="btn-add-sidequest" style="margin-top: 20px; width: 100%;">+ NOVA QUEST</button>
-                            <p style="color: var(--text-muted); font-size: 0.7rem; text-align: center; margin-top: 6px;">Adicione uma missão pessoal para realizar a qualquer momento.</p>
                         </div>
+
+                        <!-- Coluna: Vitalidade -->
+                        <div class="quest-attr-column health-col">
+                            <div class="quest-column-header">
+                                <h3>VITALIDADE</h3>
+                            </div>
+                            <div class="quest-list" id="quests-list-health">
+                                <!-- Rendered via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Caixa de adicionar atividades centralizada -->
+                    <div class="quests-actions-footer">
+                        <button class="btn-submit" id="btn-add-sidequest" style="width: 100%; max-width: 400px;">+ NOVA QUEST</button>
+                        <p style="color: var(--text-muted); font-size: 0.7rem; text-align: center; margin-top: 6px;">Adicione uma missão pessoal para realizar a qualquer momento.</p>
                     </div>
                 </div>
 
@@ -301,12 +315,7 @@
                 </div>
             </div>
                     
-                    <!-- Botão de Instalação do PWA Mobile no Rodapé -->
-                    <div class="pwa-install-mobile-footer">
-                        <button id="btn-pwa-install-footer" class="btn-pwa-install-footer">
-                            📥 INSTALAR APLICATIVO (TELA DE INÍCIO)
-                        </button>
-                    </div>
+
 
                 <!-- ABA TAVERNA -->
                 <section id="tab-rewards" class="tab-content">
