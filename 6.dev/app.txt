@@ -1342,11 +1342,55 @@ window.renderInventory = function() {
 // ==========================================================================
 // ONBOARDING WIZARD
 // ==========================================================================
+function updateWizardBackBtnVisibility() {
+    const btnBack = document.getElementById('btn-wizard-back');
+    if (!btnBack) return;
+    const step1 = document.getElementById('wizard-step-1');
+    if (step1 && (step1.style.display === 'block' || step1.style.display === '')) {
+        btnBack.style.display = 'none';
+    } else {
+        btnBack.style.display = 'inline-flex';
+    }
+}
+
+function goBackWizard() {
+    const step1 = document.getElementById('wizard-step-1');
+    const step2 = document.getElementById('wizard-step-2');
+    const stepHook = document.getElementById('wizard-step-hook');
+    const step3 = document.getElementById('wizard-step-3');
+
+    if (step2 && step2.style.display === 'block') {
+        step2.style.display = 'none';
+        if (step1) step1.style.display = 'block';
+    } else if (stepHook && stepHook.style.display === 'block') {
+        stepHook.style.display = 'none';
+        if (step2) step2.style.display = 'block';
+    } else if (step3 && step3.style.display === 'block') {
+        step3.style.display = 'none';
+        const otherCard = document.querySelector('.archetype-card-other');
+        if (otherCard && otherCard.classList.contains('selected')) {
+            if (step2) step2.style.display = 'block';
+        } else {
+            if (stepHook) stepHook.style.display = 'block';
+        }
+    }
+    updateWizardBackBtnVisibility();
+}
+
 function initOnboardingWizard() {
     const wizardModal = document.getElementById('onboarding-wizard');
     if (!wizardModal) return;
     
     wizardModal.style.cssText = 'display: flex !important; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); justify-content: center; align-items: center; padding: 24px;';
+    updateWizardBackBtnVisibility();
+
+    // Botão Voltar
+    const btnBack = document.getElementById('btn-wizard-back');
+    if (btnBack) {
+        btnBack.addEventListener('click', () => {
+            goBackWizard();
+        });
+    }
     
     // Passo 1: Nome
     const btnNext1 = document.getElementById('btn-wizard-next-1');
@@ -1359,6 +1403,7 @@ function initOnboardingWizard() {
             document.getElementById('lbl-player-name').innerText = name.toUpperCase();
             document.getElementById('wizard-step-1').style.display = 'none';
             document.getElementById('wizard-step-2').style.display = 'block';
+            updateWizardBackBtnVisibility();
         } else {
             inputName.style.borderColor = 'red';
         }
@@ -1407,6 +1452,7 @@ function initOnboardingWizard() {
                 document.getElementById('wizard-step-2').style.display = 'none';
                 document.getElementById('wizard-step-hook').style.display = 'block';
             }
+            updateWizardBackBtnVisibility();
         }
     });
 
@@ -1415,6 +1461,7 @@ function initOnboardingWizard() {
     btnNextHook.addEventListener('click', () => {
         document.getElementById('wizard-step-hook').style.display = 'none';
         document.getElementById('wizard-step-3').style.display = 'block';
+        updateWizardBackBtnVisibility();
     });
 
     // Passo 3: Comprometimento e Finalização
