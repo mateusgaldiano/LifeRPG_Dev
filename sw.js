@@ -3,21 +3,21 @@
    Cache-first strategy + Local notifications scheduling
    ========================================================================== */
 
-const CACHE_NAME = 'liferpg-v20';
+const CACHE_NAME = 'liferpg-v21';
 const ASSETS_TO_CACHE = [
-    '/',
-    '/index.html',
-    '/1.core/styles.css',
-    '/1.core/app.js',
-    '/1.core/manifest.json',
-    '/2.assets/icons/icon-192.png',
-    '/2.assets/icons/icon-512.png',
-    '/2.assets/avatars/1.rank-e.png',
-    '/2.assets/avatars/2.rank-d.png',
-    '/2.assets/avatars/3.rank-c.png',
-    '/2.assets/avatars/4.rank-b.png',
-    '/2.assets/avatars/5.rank-a.png',
-    '/2.assets/avatars/6.rank-s.png',
+    './',
+    'index.html',
+    '1.core/styles.css',
+    '1.core/app.js',
+    'manifest.json',
+    '2.assets/icons/icon-192.png',
+    '2.assets/icons/icon-512.png',
+    '2.assets/avatars/1.rank-e.png',
+    '2.assets/avatars/2.rank-d.png',
+    '2.assets/avatars/3.rank-c.png',
+    '2.assets/avatars/4.rank-b.png',
+    '2.assets/avatars/5.rank-a.png',
+    '2.assets/avatars/6.rank-s.png',
 ];
 
 // ── INSTALL: pre-cache all assets ────────────────────────────────────────────
@@ -69,7 +69,7 @@ self.addEventListener('fetch', (event) => {
             }).catch(() => {
                 // Offline fallback
                 if (event.request.destination === 'document') {
-                    return caches.match('/index.html');
+                    return caches.match('index.html');
                 }
             });
         })
@@ -164,13 +164,13 @@ function msUntil(targetHour, targetMin) {
 function showNotification(title, body, tag) {
     self.registration.showNotification(title, {
         body,
-        icon: '/2.assets/icons/icon-192.png',
-        badge: '/2.assets/icons/icon-192.png',
+        icon: '2.assets/icons/icon-192.png',
+        badge: '2.assets/icons/icon-192.png',
         vibrate: [200, 100, 200, 100, 200],
         tag,
         renotify: true,
         requireInteraction: false,
-        data: { url: '/' }
+        data: { url: './' }
     });
 }
 
@@ -187,7 +187,7 @@ self.addEventListener('notificationclick', (event) => {
             }
             // Senão, abre uma nova janela
             if (clients.openWindow) {
-                return clients.openWindow('/');
+                return clients.openWindow('./');
             }
         })
     );

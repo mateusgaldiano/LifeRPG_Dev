@@ -3144,7 +3144,7 @@ let deferredPrompt = null;
 
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('1.core/sw.js')
+        navigator.serviceWorker.register('sw.js')
             .then(reg => {
                 serviceWorkerRegistration = reg;
                 console.log('[App] SW Registrado:', reg.scope);
