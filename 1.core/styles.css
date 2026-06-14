@@ -822,7 +822,16 @@ body::before {
     border-radius: var(--radius-md); font-size: 13px; font-family: var(--font-body); outline: none;
     transition: border-color 0.2s;
 }
-.form-field input:focus, .form-field select:focus { border-color: rgba(139,92,246,0.4); box-shadow: 0 0 10px var(--glow-purple); }
+#wizard-name-input {
+    width: 100%;
+    text-align: center;
+    font-size: 18px;
+    padding: 14px;
+    margin-bottom: 16px;
+    box-sizing: border-box;
+}
+.form-field input:focus, .form-field select:focus,
+.form-group input[type="text"]:focus { border-color: rgba(139,92,246,0.4); box-shadow: 0 0 10px var(--glow-purple); }
 .form-field select option { background: #1a1c28; }
 
 .btn-submit {
