@@ -194,29 +194,38 @@
                     <div id="weekly-boss-container" style="display:none; margin-bottom: 20px;"></div>
                     <!-- Dungeon Ativa -->
                     <div id="dungeon-active-banner" style="display:none; margin-bottom: 20px;"></div>
-                    <div class="quest-section-header">
-                        <div>
-                            <h2>Missões Diárias</h2>
-                            <p style="color: var(--text-muted); font-size: 0.7rem; margin-top: 2px;">Hábitos gerados pelo seu nível para manter sua rotina diária.</p>
+                    
+                    <div class="quests-split-layout">
+                        <!-- Coluna Esquerda: Missões Diárias -->
+                        <div class="quests-column">
+                            <div class="quest-section-header">
+                                <div>
+                                    <h2>Missões Diárias</h2>
+                                    <p style="color: var(--text-muted); font-size: 0.7rem; margin-top: 2px;">Hábitos gerados pelo seu nível para manter sua rotina diária.</p>
+                                </div>
+                            </div>
+                            <div class="quest-list" id="daily-quests-list">
+                                <!-- Quests renderizadas via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Coluna Direita: Side Quests -->
+                        <div class="quests-column">
+                            <div class="quest-section-header">
+                                <div>
+                                    <h2>Side Quests</h2>
+                                    <p style="color: var(--text-muted); font-size: 0.7rem; margin-top: 2px;">Objetivos secundários criados por você para acelerar sua evolução.</p>
+                                </div>
+                            </div>
+                            <div class="quest-list" id="side-quests-list">
+                                <!-- Side Quests renderizadas via JS -->
+                            </div>
+
+                            <button class="btn-submit" id="btn-add-sidequest" style="margin-top: 20px; width: 100%;">+ NOVA QUEST</button>
+                            <p style="color: var(--text-muted); font-size: 0.7rem; text-align: center; margin-top: 6px;">Adicione uma missão pessoal para realizar a qualquer momento.</p>
                         </div>
                     </div>
-                    <div class="quest-list" id="daily-quests-list">
-                        <!-- Quests renderizadas via JS -->
-                    </div>
-
-                    <div class="quest-section-header" style="margin-top: 30px;">
-                        <div>
-                            <h2>Side Quests</h2>
-                            <p style="color: var(--text-muted); font-size: 0.7rem; margin-top: 2px;">Objetivos secundários criados por você para acelerar sua evolução.</p>
-                        </div>
-                    </div>
-                    <div class="quest-list" id="side-quests-list">
-                        <!-- Side Quests renderizadas via JS -->
-                    </div>
-
-                    <button class="btn-submit" id="btn-add-sidequest" style="margin-top: 20px; width: 100%;">+ NOVA QUEST</button>
-                    <p style="color: var(--text-muted); font-size: 0.7rem; text-align: center; margin-top: 6px;">Adicione uma missão pessoal para realizar a qualquer momento.</p>
-            </div>
+                </div>
 
             <!-- ABA: VISÃO GLOBAL (DASHBOARD & HEATMAP) -->
             <div id="tab-global" class="tab-content">
