@@ -3206,69 +3206,7 @@ function setupSettingsListeners() {
         });
     }
 
-    // Testar notificação
-    const btnTestNotif = document.getElementById('btn-test-notif');
-    if (btnTestNotif) {
-        btnTestNotif.addEventListener('click', () => {
-            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({
-                    type: 'TEST_NOTIFICATION'
-                });
-            } else {
-                alert('Service Worker não está ativo ou não foi registrado. Aguarde e tente novamente.');
-            }
-        });
-    }
 
-    // Exportar Save
-    const btnExportSave = document.getElementById('btn-export-save');
-    if (btnExportSave) {
-        btnExportSave.addEventListener('click', () => {
-            try {
-                const payload = JSON.stringify(gameState, null, 2);
-                const blob = new Blob([payload], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                const ts = new Date().toISOString().slice(0,10);
-                a.href = url;
-                a.download = `thesystem-backup-${ts}.json`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-                setTimeout(() => showSystemToast('💾 *BACKUP EXPORTADO!* Seu arquivo de save foi baixado com sucesso. Guarde-o em local seguro — ele é sua memória.'), 300);
-            } catch(err) {
-                showSystemToast('⚠️ Erro ao exportar o save. Tente novamente.');
-            }
-        });
-    }
-
-    // Importar Save
-    const fileInputImport = document.getElementById('import-save-file');
-    if (fileInputImport) {
-        fileInputImport.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const parsed = JSON.parse(event.target.result);
-                    if (parsed.hasOwnProperty('level') && parsed.hasOwnProperty('xp') && parsed.hasOwnProperty('gold')) {
-                        localStorage.setItem('lifeRPG_gameState', JSON.stringify(parsed));
-                        // Toast antes do reload
-                        showSystemToast('📥 *SAVE IMPORTADO!* Memória restaurada com sucesso. O Sistema está reiniciando...');
-                        setTimeout(() => window.location.reload(), 2000);
-                    } else {
-                        showSystemToast('⚠️ *ARQUIVO INVÁLIDO.* O arquivo não parece ser um backup válido do The System.');
-                    }
-                } catch (err) {
-                    showSystemToast('L *ERRO AO IMPORTAR.* Arquivo corrompido ou formato desconhecido.');
-                }
-            };
-            reader.readAsText(file);
-        });
-    }
 
     // Hard Reset (Destruição do Sistema)
     const btnHardReset = document.getElementById('btn-hard-reset');
@@ -3300,31 +3238,32 @@ function loadSettingsToUI() {
 
 // Atualiza a badge visual de permissão
 function updateNotificationPermissionUI() {
-    const badge = document.getElementById('notif-permission-badge');
     const btnRequest = document.getElementById('btn-request-notif');
-    
-    if (!badge) return;
+    if (!btnRequest) return;
     
     if (!('Notification' in window)) {
-        badge.innerText = 'NÃO SUPORTADO';
-        badge.className = 'badge-status-denied';
-        if (btnRequest) btnRequest.style.display = 'none';
+        btnRequest.innerText = 'NÃO SUPORTADO';
+        btnRequest.disabled = true;
+        btnRequest.style.opacity = '0.5';
         return;
     }
     
     const perm = Notification.permission;
     if (perm === 'granted') {
-        badge.innerText = 'CONCEDIDO';
-        badge.className = 'badge-status-granted';
-        if (btnRequest) btnRequest.style.display = 'none';
+        btnRequest.innerText = 'ATIVADO';
+        btnRequest.disabled = true;
+        btnRequest.classList.add('active');
+        btnRequest.style.opacity = '1';
     } else if (perm === 'denied') {
-        badge.innerText = 'BLOQUEADO';
-        badge.className = 'badge-status-denied';
-        if (btnRequest) btnRequest.style.display = 'inline-block';
+        btnRequest.innerText = 'BLOQUEADO';
+        btnRequest.disabled = true;
+        btnRequest.style.opacity = '0.5';
+        btnRequest.classList.remove('active');
     } else {
-        badge.innerText = 'NÃO CONFIGURADO';
-        badge.className = 'badge-status-neutral';
-        if (btnRequest) btnRequest.style.display = 'inline-block';
+        btnRequest.innerText = 'ATIVAR';
+        btnRequest.disabled = false;
+        btnRequest.style.opacity = '1';
+        btnRequest.classList.remove('active');
     }
 }
 

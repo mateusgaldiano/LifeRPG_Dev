@@ -666,41 +666,40 @@
                 <!-- Notificações -->
                 <div class="settings-group">
                     <div class="settings-group-title">NOTIFICAÇÕES DIÁRIAS</div>
-                    <div class="notification-status-row">
-                        <span>Permissão:</span>
-                        <span id="notif-permission-badge" class="badge-status-neutral">Verificando...</span>
-                        <button id="btn-request-notif" class="btn-tiny" style="display:none;">Habilitar</button>
+                    
+                    <div class="notif-toggle-row">
+                        <span>🔔 Notificações</span>
+                        <button id="btn-request-notif" class="btn-toggle-pill">Ativar</button>
                     </div>
                     
-                    <div class="notification-inputs">
-                        <div class="form-field form-field-inline">
-                            <label>Manhã (Quests)</label>
-                            <div class="time-input-row">
-                                <input type="number" id="notif-morning-hour" min="0" max="23" placeholder="07">
+                    <div class="notif-times-row">
+                        <div class="notif-time-item">
+                            <span class="notif-time-label">☀️ Manhã</span>
+                            <div class="time-input-row-compact">
+                                <input type="number" id="notif-morning-hour" min="0" max="23" placeholder="07" style="width:40px">
                                 <span>:</span>
-                                <input type="number" id="notif-morning-min" min="0" max="59" placeholder="00">
+                                <input type="number" id="notif-morning-min" min="0" max="59" placeholder="00" style="width:40px">
                             </div>
                         </div>
-                        <div class="form-field form-field-inline">
-                            <label>Noite (Streaks)</label>
-                            <div class="time-input-row">
-                                <input type="number" id="notif-evening-hour" min="0" max="23" placeholder="19">
+                        <div class="notif-time-item">
+                            <span class="notif-time-label">🌙 Noite</span>
+                            <div class="time-input-row-compact">
+                                <input type="number" id="notif-evening-hour" min="0" max="23" placeholder="19" style="width:40px">
                                 <span>:</span>
-                                <input type="number" id="notif-evening-min" min="0" max="59" placeholder="00">
+                                <input type="number" id="notif-evening-min" min="0" max="59" placeholder="00" style="width:40px">
                             </div>
                         </div>
                     </div>
                     
                     <div class="settings-actions-row">
-                        <button id="btn-save-notif" class="btn-submit btn-notif-action">Salvar Horários</button>
-                        <button id="btn-test-notif" class="btn-submit btn-secondary btn-notif-action">Testar</button>
+                        <button id="btn-save-notif" class="btn-submit btn-notif-action" style="width: 100%;">SALVAR</button>
                     </div>
                 </div>
 
                 <!-- Hard Reset -->
-                <div class="settings-group" style="margin-top: 30px; border-top: 1px solid var(--border-glass); padding-top: 20px;">
+                <div class="settings-group" style="margin-top: 16px; border-top: 1px solid var(--border-glass); padding-top: 16px;">
                     <div class="settings-group-title" style="color: var(--neon-red);">🔥 DESTRUIÇÃO DO SISTEMA (RESET GERAL)</div>
-                    <p class="settings-group-desc" style="color: var(--text-muted);">Apaga todo o progresso atual, histórico e configurações e reinicia o onboarding. Esta ação não pode ser desfeita.</p>
+                    <p class="settings-group-desc" style="color: var(--text-muted);">Apaga todo o progresso. Esta ação não pode ser desfeita.</p>
                     <div class="backup-actions" style="margin-top: 10px;">
                         <button id="btn-hard-reset" class="btn-submit" style="background: var(--neon-red); box-shadow: none;">☠️ APAGAR TUDO E RECOMEÇAR</button>
                     </div>

@@ -78,6 +78,8 @@ body {
     background: var(--bg-void);
     color: var(--text-primary);
     font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -255,7 +257,7 @@ body::before {
 .player-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
 .player-name {
     font-family: var(--font-hud);
-    font-size: 14px; font-weight: 900;
+    font-size: 16px; font-weight: 900;
     color: var(--text-primary); letter-spacing: 1px;
 }
 .rank-badge {
@@ -412,7 +414,7 @@ body::before {
     color: var(--text-secondary); letter-spacing: 1px;
 }
 .attr-bar-icon { font-size: 11px; }
-.attr-bar-name { flex: 1; }
+.attr-bar-name { flex: 1; font-size: 12px; }
 .attr-bar-lvl {
     font-family: var(--font-hud); font-size: 10px; font-weight: 700;
     color: var(--text-primary);
@@ -501,7 +503,7 @@ body::before {
 }
 .header-titles h2 {
     font-family: var(--font-hud);
-    font-size: 16px; font-weight: 900;
+    font-size: 22px; font-weight: 900;
     color: var(--text-primary); letter-spacing: 2px;
     text-shadow: 0 0 20px rgba(255,255,255,0.1);
 }
@@ -592,10 +594,10 @@ body::before {
 .quest-icon { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
 
 .quest-title-wrap { display: flex; flex-direction: column; gap: 4px; }
-.quest-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.quest-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
 .quest-payouts { display: flex; gap: 10px; }
-.payout-xp  { font-family: var(--font-hud); font-size: 9px; color: var(--neon-purple); }
-.payout-gold { font-family: var(--font-hud); font-size: 9px; color: var(--neon-gold); }
+.payout-xp  { font-family: var(--font-hud); font-size: 11px; color: var(--neon-purple); }
+.payout-gold { font-family: var(--font-hud); font-size: 11px; color: var(--neon-gold); }
 .diff-badge { font-family: var(--font-hud); font-size: 9px; color: var(--text-muted); }
 
 .quest-complete-btn {
@@ -776,7 +778,7 @@ body::before {
 .close-modal-btn:hover { color: var(--neon-purple); transform: scale(1.1); }
 
 .form-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-.form-field label { font-family: var(--font-hud); font-size: 9px; color: var(--text-muted); letter-spacing: 1px; }
+.form-field label { font-family: var(--font-hud); font-size: 12px; color: var(--text-muted); letter-spacing: 1px; }
 .form-field input, .form-field select,
 .form-group input[type="text"] {
     background: var(--bg-input); border: 1px solid var(--border-glass);
@@ -792,7 +794,7 @@ body::before {
     background: linear-gradient(90deg, var(--neon-purple), #9f7aea);
     color: #fff; border: none;
     padding: 13px; border-radius: var(--radius-md);
-    font-family: var(--font-hud); font-size: 11px; font-weight: 900;
+    font-family: var(--font-hud); font-size: 14px; font-weight: 900;
     letter-spacing: 2px; cursor: pointer;
     box-shadow: 0 0 12px var(--glow-purple);
     transition: all 0.2s;
@@ -964,87 +966,89 @@ body::before {
 }
 .settings-group-title {
     font-family: var(--font-hud);
-    font-size: 11px;
+    font-size: 13px;
     color: var(--neon-purple);
     letter-spacing: 1.5px;
     margin-bottom: 12px;
 }
 .settings-group-desc {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-muted);
     margin-bottom: 12px;
     line-height: 1.4;
 }
-.notification-status-row {
+.notif-toggle-row {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 10px;
-    font-size: 12px;
     margin-bottom: 16px;
-}
-.badge-status-neutral, .badge-status-granted, .badge-status-denied {
-    font-family: var(--font-hud);
-    font-size: 9px;
-    padding: 3px 8px;
-    border-radius: var(--radius-sm);
-    font-weight: 700;
-}
-.badge-status-neutral {
-    background: rgba(255, 255, 255, 0.1);
+    font-size: 13px;
     color: var(--text-primary);
 }
-.badge-status-granted {
-    background: rgba(16, 185, 129, 0.2);
-    color: var(--neon-green);
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
-}
-.badge-status-denied {
-    background: rgba(255, 94, 98, 0.2);
-    color: var(--neon-orange);
-    box-shadow: 0 0 8px rgba(255, 94, 98, 0.2);
-}
-.btn-tiny {
+.btn-toggle-pill {
     background: rgba(139, 92, 246, 0.15);
     border: 1px solid var(--neon-purple);
     color: var(--text-primary);
     font-family: var(--font-hud);
-    font-size: 9px;
-    padding: 3px 8px;
-    border-radius: var(--radius-sm);
+    font-size: 11px;
+    padding: 6px 16px;
+    border-radius: 20px;
     cursor: pointer;
     transition: all 0.2s;
 }
-.btn-tiny:hover {
+.btn-toggle-pill:hover {
     background: var(--neon-purple);
     color: #000;
 }
-.notification-inputs {
+.btn-toggle-pill.active {
+    background: linear-gradient(90deg, var(--neon-green), #34d399);
+    border-color: var(--neon-green);
+    color: #000;
+    font-weight: bold;
+}
+.notif-times-row {
     display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
 }
-.form-field-inline {
-    flex: 1;
-    margin-bottom: 0;
-}
-.form-field-inline label {
-    margin-bottom: 6px;
-}
-.time-input-row {
+.notif-time-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
+    flex: 1;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-glass);
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    justify-content: space-between;
 }
-.time-input-row input {
-    width: 100%;
-    text-align: center;
-    padding: 8px;
-    font-family: var(--font-mono);
-    font-size: 16px; /* 16px to prevent iOS Safari auto-zooming */
-}
-.time-input-row span {
-    font-weight: bold;
+.notif-time-label {
+    font-size: 12px;
     color: var(--text-muted);
+}
+.time-input-row-compact {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.time-input-row-compact input {
+    width: 38px;
+    text-align: center;
+    background: var(--bg-input);
+    border: 1px solid var(--border-glass);
+    color: var(--text-primary);
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    outline: none;
+}
+.time-input-row-compact input:focus {
+    border-color: var(--neon-purple);
+}
+.time-input-row-compact span {
+    color: var(--text-muted);
+    font-weight: bold;
 }
 .settings-actions-row {
     display: flex;
