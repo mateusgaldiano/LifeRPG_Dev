@@ -68,6 +68,11 @@ window.loginWithGoogle = async function() {
 };
 
 window.logoutSupabase = async function() {
+  if (presenceChannel) {
+    presenceChannel.unsubscribe();
+    presenceChannel = null;
+    presenceSubscribed = false;
+  }
   await supabaseClient.auth.signOut();
   window._currentUserDbId = null;
   // Atualizar UI para estado "Não sincronizado"
@@ -95,6 +100,49 @@ window.initSupabase = function() {
       ensureUserProfile(data.session.user).then(() => syncFromCloud());
     }
   });
+};
+
+// --------------------------------------------------------------------------
+// PRESENCE — Controle de status online e jogadores ativos
+// --------------------------------------------------------------------------
+let presenceChannel = null;
+let presenceSubscribed = false;
+window.onlineUsersState = {};
+
+window.initPresence = function(userId, username, level, rank) {
+  const trackPayload = {
+    user_id: userId,
+    username: username,
+    level: level,
+    rank: rank,
+    online_at: new Date().toISOString()
+  };
+
+  if (presenceChannel && presenceSubscribed) {
+    presenceChannel.track(trackPayload);
+    return;
+  }
+
+  if (presenceChannel) {
+    presenceChannel.unsubscribe();
+  }
+
+  presenceChannel = supabaseClient.channel('presence:global');
+  presenceChannel
+    .on('presence', { event: 'sync' }, () => {
+      window.onlineUsersState = presenceChannel.presenceState();
+      if (typeof updateOnlinePlayersUI === 'function') {
+        updateOnlinePlayersUI();
+      }
+    })
+    .subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        presenceSubscribed = true;
+        await presenceChannel.track(trackPayload);
+      } else {
+        presenceSubscribed = false;
+      }
+    });
 };
 
 function updateCloudStatusUI(online) {
@@ -139,6 +187,7 @@ async function ensureUserProfile(authUser) {
 
   if (!userRow) {
     // PRIMEIRO LOGIN — fazer upload do progresso local atual
+    const rankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
     const { data: newUser } = await supabaseClient
       .from('users')
       .insert({
@@ -148,7 +197,7 @@ async function ensureUserProfile(authUser) {
         xp: gameState.xp,
         gold: gameState.gold,
         streak: gameState.streak,
-        rank: getRankForLevel(gameState.level),
+        rank: rankLetter,
         archetype: gameState.archetype,
         active_skin: gameState.inventory?.activeSkin || 'default',
         skills: gameState.skills,
@@ -170,6 +219,12 @@ async function ensureUserProfile(authUser) {
 
   } else {
     window._currentUserDbId = userRow.id;
+  }
+
+  // Inicializar Presença Global pós login/restauração de sessão
+  if (window._currentUserDbId) {
+    const userRankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
+    window.initPresence(window._currentUserDbId, gameState.playerName || authUser.email, gameState.level, userRankLetter);
   }
 }
 
@@ -224,6 +279,7 @@ window.syncFromCloud = async function() {
 window.saveToSupabase = async function() {
   if (!window._currentUserDbId) return;
 
+  const rankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
   const { error } = await supabaseClient
     .from('users')
     .update({
@@ -232,7 +288,7 @@ window.saveToSupabase = async function() {
       xp:          gameState.xp,
       gold:        gameState.gold,
       streak:      gameState.streak,
-      rank:        getRankForLevel(gameState.level),
+      rank:        rankLetter,
       archetype:   gameState.archetype,
       active_skin: gameState.inventory?.activeSkin || 'default',
       skills:      gameState.skills,
@@ -244,7 +300,14 @@ window.saveToSupabase = async function() {
     })
     .eq('id', window._currentUserDbId);
 
-  if (error) console.error('[Supabase] saveToSupabase:', error.message);
+  if (error) {
+    console.error('[Supabase] saveToSupabase:', error.message);
+  } else {
+    // Re-trackear presença com os dados de nível/rank atualizados
+    if (typeof window.initPresence === 'function') {
+      window.initPresence(window._currentUserDbId, gameState.playerName, gameState.level, rankLetter);
+    }
+  }
 };
 
 // --------------------------------------------------------------------------

@@ -29,3 +29,10 @@ Estas são as únicas pendências que ainda não foram concluídas no projeto.
 
 5. Auditoria Visual ao Vivo
    - Testar e validar visualmente espaçamentos, animações e contraste WCAG diretamente em celulares físicos com viewports de 375px a 430px.
+
+---
+
+## 👥 COMUNIDADE & SOCIAL (FASE 2)
+6. Acesso de Leitura ao Chat Global (Anônimo)
+   - [x] Decidido: O chat global será legível por visitantes não autenticados (modo leitura) para atrair engajamento. Envio de mensagens e exibição na lista de jogadores online (Presence) continuam restritos a usuários logados via Google.
+

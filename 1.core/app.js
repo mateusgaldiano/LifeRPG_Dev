@@ -1184,7 +1184,10 @@ function initTabs() {
             const tabName = btn.getAttribute('data-tab');
             const targetTab = document.getElementById(`tab-${tabName}`);
             
-            if (!targetTab) return;
+            // Sempre limpar inscrições do chat ao trocar de aba
+            if (typeof exitCommunityTab === 'function') {
+                exitCommunityTab();
+            }
 
             navButtons.forEach(b => b.classList.remove('active'));
             tabContents.forEach(t => t.classList.remove('active'));
@@ -1195,6 +1198,11 @@ function initTabs() {
             // Se for a aba Global, renderiza os gráficos e o heatmap
             if (tabName === 'global') {
                 renderGlobalDashboard();
+            }
+            if (tabName === 'community') {
+                if (typeof enterCommunityTab === 'function') {
+                    enterCommunityTab();
+                }
             }
             /*
             if (tabName === 'chat') {
@@ -4191,6 +4199,7 @@ Lembre-se de comentar sobre o progresso real do jogador se for relevante (ex: se
         const indicator = document.getElementById('chat-typing-indicator');
         if (indicator) indicator.remove();
 
+
         gameState.messages.push({
             role: 'assistant',
             content: `Hum... parece que nossas xícaras de chá se desentenderam, meu jovem. O vento soprou forte e a conexão com o servidor falhou. Certifique-se de que sua Chave de API está correta e que você configurou um Proxy CORS ou Gateway adequado nas configurações para que possamos nos comunicar sem impedimentos no navegador.\n\n*(Erro técnico: ${err.message})*`
@@ -4200,3 +4209,317 @@ Lembre-se de comentar sobre o progresso real do jogador se for relevante (ex: se
     });
 }
 */
+
+// ==========================================================================
+// CENTRAL DA COMUNIDADE — CHAT GLOBAL E ONLINE PRESENCE
+// ==========================================================================
+let chatChannel = null;
+let lastMessageTime = 0; // Para controle de rate limit local (2s)
+
+async function enterCommunityTab() {
+    // 1. Inicializar interface com base na autenticação
+    updateChatInputState();
+    
+    // 2. Carregar últimas 50 mensagens
+    await loadChatMessages();
+    
+    // 3. Inscrever nas mudanças em tempo real (Postgres Changes)
+    setupRealtimeChat();
+
+    // 4. Forçar render da lista de online (Presence já roda no boot/sessão)
+    updateOnlinePlayersUI();
+    
+    // Configurar listeners de clique e envio se for a primeira vez
+    setupChatListeners();
+}
+
+function exitCommunityTab() {
+    if (chatChannel) {
+        chatChannel.unsubscribe();
+        chatChannel = null;
+    }
+}
+
+function updateChatInputState() {
+    const input = document.getElementById('chat-message-input');
+    const btn = document.getElementById('btn-send-message');
+    if (!input || !btn) return;
+
+    if (window._currentUserDbId) {
+        input.disabled = false;
+        btn.disabled = false;
+        input.placeholder = "Digite sua mensagem para a comunidade...";
+    } else {
+        input.disabled = true;
+        btn.disabled = true;
+        input.placeholder = "Faça login com o Google para enviar mensagens e aparecer online";
+        input.value = "";
+    }
+}
+
+async function loadChatMessages() {
+    const chatContainer = document.getElementById('chat-messages-list');
+    if (!chatContainer) return;
+
+    // Buscar mensagens mais recentes do canal global
+    const { data: messages, error } = await supabaseClient
+        .from('chat_messages')
+        .select('*')
+        .eq('channel', 'global')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+    if (error) {
+        console.error('Erro ao buscar mensagens do chat:', error.message);
+        chatContainer.innerHTML = `<div class="chat-empty-state" style="color: var(--neon-red);">⚠️ Erro ao carregar mensagens.</div>`;
+        return;
+    }
+
+    chatContainer.innerHTML = '';
+    
+    if (messages.length === 0) {
+        chatContainer.innerHTML = `<div class="chat-empty-state">Nenhuma mensagem no chat ainda. Envie a primeira!</div>`;
+        return;
+    }
+
+    // Inverter para mostrar em ordem cronológica (mais antigas em cima, mais novas embaixo)
+    const cronoMessages = messages.reverse();
+    cronoMessages.forEach(msg => {
+        appendMessageUI(msg);
+    });
+
+    scrollChatToBottom();
+}
+
+function setupRealtimeChat() {
+    if (chatChannel) return;
+
+    chatChannel = supabaseClient
+        .channel('public:chat_messages')
+        .on(
+            'postgres_changes',
+            {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'chat_messages',
+                filter: 'channel=eq.global'
+            },
+            (payload) => {
+                const chatContainer = document.getElementById('chat-messages-list');
+                if (chatContainer) {
+                    // Remover empty state se houver
+                    const emptyState = chatContainer.querySelector('.chat-empty-state');
+                    if (emptyState) emptyState.remove();
+                    
+                    appendMessageUI(payload.new);
+                    scrollChatToBottom();
+                }
+            }
+        )
+        .subscribe();
+}
+
+function appendMessageUI(msg) {
+    const chatContainer = document.getElementById('chat-messages-list');
+    if (!chatContainer) return;
+
+    const isSelf = msg.user_id === window._currentUserDbId;
+    
+    // Criar elementos de forma segura contra XSS
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `chat-msg${isSelf ? ' self' : ''}`;
+
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'chat-msg-header';
+
+    const usernameSpan = document.createElement('span');
+    usernameSpan.className = 'chat-msg-username';
+    usernameSpan.textContent = msg.username;
+
+    const levelSpan = document.createElement('span');
+    levelSpan.className = 'chat-msg-level';
+    levelSpan.textContent = `Lvl ${msg.level}`;
+
+    const rankSpan = document.createElement('span');
+    const rankClass = msg.rank ? msg.rank.toLowerCase() : 'e';
+    rankSpan.className = `rank-badge rank-${rankClass} chat-msg-rank`;
+    rankSpan.textContent = `RANK ${msg.rank || 'E'}`;
+
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'chat-msg-time';
+    
+    // Formatar hora (created_at)
+    try {
+        const date = new Date(msg.created_at);
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        timeSpan.textContent = `${hours}:${minutes}`;
+    } catch (e) {
+        timeSpan.textContent = '';
+    }
+
+    // Montar cabeçalho
+    headerDiv.appendChild(usernameSpan);
+    headerDiv.appendChild(levelSpan);
+    headerDiv.appendChild(rankSpan);
+    headerDiv.appendChild(timeSpan);
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'chat-msg-content';
+    contentDiv.textContent = msg.content; // IMPEDIR XSS
+
+    msgDiv.appendChild(headerDiv);
+    msgDiv.appendChild(contentDiv);
+
+    chatContainer.appendChild(msgDiv);
+}
+
+function scrollChatToBottom() {
+    const chatContainer = document.getElementById('chat-messages-list');
+    if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+}
+
+function setupChatListeners() {
+    const input = document.getElementById('chat-message-input');
+    const btn = document.getElementById('btn-send-message');
+    if (!input || !btn) return;
+
+    // Remover listeners anteriores
+    input.replaceWith(input.cloneNode(true));
+    btn.replaceWith(btn.cloneNode(true));
+
+    const newInput = document.getElementById('chat-message-input');
+    const newBtn = document.getElementById('btn-send-message');
+
+    newBtn.addEventListener('click', handleSendMessage);
+    newInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            handleSendMessage();
+        }
+    });
+}
+
+async function handleSendMessage() {
+    const input = document.getElementById('chat-message-input');
+    if (!input) return;
+
+    const content = input.value.trim();
+    if (!content) return;
+
+    // Rate limit local de 2 segundos
+    const now = Date.now();
+    if (now - lastMessageTime < 2000) {
+        showSystemToast('⏳ Sistema em resfriamento. Aguarde 2 segundos.');
+        return;
+    }
+
+    if (!window._currentUserDbId) {
+        showSystemToast('⚠️ Faça login para enviar mensagens.');
+        return;
+    }
+
+    // Desabilitar durante o envio
+    input.disabled = true;
+    const btn = document.getElementById('btn-send-message');
+    if (btn) btn.disabled = true;
+
+    const userRankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
+    const { error } = await supabaseClient
+        .from('chat_messages')
+        .insert({
+            user_id: window._currentUserDbId,
+            username: gameState.playerName || 'Desperto',
+            level: gameState.level,
+            rank: userRankLetter,
+            channel: 'global',
+            content: content
+        });
+
+    input.disabled = false;
+    if (btn) btn.disabled = false;
+    input.focus();
+
+    if (error) {
+        console.error('Erro ao enviar mensagem:', error.message);
+        showSystemToast('⚠️ Falha ao transmitir mensagem ao chat.');
+    } else {
+        input.value = '';
+        lastMessageTime = Date.now();
+    }
+}
+
+// --------------------------------------------------------------------------
+// UI PRESENCE — Renderizar a lista de online sidebar
+// --------------------------------------------------------------------------
+window.updateOnlinePlayersUI = function() {
+    const countEl = document.getElementById('online-users-count');
+    const listEl = document.getElementById('online-users-list');
+    if (!listEl) return;
+
+    const state = window.onlineUsersState || {};
+    const presenceKeys = Object.keys(state);
+
+    if (countEl) countEl.textContent = presenceKeys.length;
+
+    listEl.innerHTML = '';
+
+    if (presenceKeys.length === 0) {
+        listEl.innerHTML = `<div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); padding: 20px 0;">Nenhum jogador online.</div>`;
+        return;
+    }
+
+    const uniquePlayersMap = new Map();
+
+    presenceKeys.forEach(key => {
+        const presences = state[key];
+        if (Array.isArray(presences)) {
+            presences.forEach(pres => {
+                if (pres.user_id && !uniquePlayersMap.has(pres.user_id)) {
+                    uniquePlayersMap.set(pres.user_id, pres);
+                }
+            });
+        }
+    });
+
+    const uniquePlayers = Array.from(uniquePlayersMap.values());
+
+    uniquePlayers.forEach(player => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'online-user-item';
+
+        const statusDot = document.createElement('span');
+        statusDot.className = 'online-user-status';
+
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'online-user-info';
+
+        const topDiv = document.createElement('div');
+        topDiv.className = 'online-user-top';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'online-user-name';
+        nameSpan.textContent = player.username || 'Desperto';
+
+        const rankSpan = document.createElement('span');
+        const rankLetter = player.rank ? player.rank.toLowerCase() : 'e';
+        rankSpan.className = `rank-badge rank-${rankLetter} online-user-rank`;
+        rankSpan.textContent = `RANK ${player.rank || 'E'}`;
+
+        const levelSpan = document.createElement('span');
+        levelSpan.className = 'online-user-level';
+        levelSpan.textContent = `Nível ${player.level || 1}`;
+
+        topDiv.appendChild(nameSpan);
+        topDiv.appendChild(rankSpan);
+        
+        infoDiv.appendChild(topDiv);
+        infoDiv.appendChild(levelSpan);
+
+        itemDiv.appendChild(statusDot);
+        itemDiv.appendChild(infoDiv);
+
+        listEl.appendChild(itemDiv);
+    });
+};
