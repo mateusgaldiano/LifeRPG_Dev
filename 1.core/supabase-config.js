@@ -52,6 +52,7 @@ window.trackEvent = function(eventName, params = {}) {
 // ESTADO INTERNO
 // --------------------------------------------------------------------------
 window._currentUserDbId = null; // id (uuid) da linha em 'users', preenchido após login
+window._isSupabaseAuthenticated = false; // flag síncrono — atualizado por onAuthStateChange
 
 // --------------------------------------------------------------------------
 // AUTH — login/logout com Google
@@ -160,7 +161,9 @@ window.initPresence = function(userId, username, level, rank) {
     });
 };
 
-function updateCloudStatusUI(online) {
+window.updateCloudStatusUI = function(online) {
+  window._isSupabaseAuthenticated = online; // mantém flag síncrono atualizado
+
   const dot = document.querySelector('.cloud-dot');
   const label = document.getElementById('cloud-status-label');
   if (dot) dot.classList.toggle('online', online);

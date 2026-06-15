@@ -3176,8 +3176,27 @@ function setupSettingsListeners() {
         btnOpenSettings.addEventListener('click', () => {
             loadSettingsToUI();
             updateNotificationPermissionUI();
+
+            // 1) Aplica o flag síncrono imediatamente — sem flicker
+            if (typeof window.updateCloudStatusUI === 'function') {
+                window.updateCloudStatusUI(window._isSupabaseAuthenticated || false);
+            }
+
+            // 2) Re-verifica a sessão real de forma assíncrona (pega tokens expirados)
+            if (typeof supabaseClient !== 'undefined') {
+                supabaseClient.auth.getSession().then(({ data }) => {
+                    const isLoggedIn = !!(data?.session?.user);
+                    if (typeof window.updateCloudStatusUI === 'function') {
+                        window.updateCloudStatusUI(isLoggedIn);
+                    }
+                }).catch(() => {
+                    // Supabase offline — mantém o flag atual
+                });
+            }
+
             modalSettings.style.display = 'flex';
         });
+
         
         btnCloseSettings.addEventListener('click', () => {
             modalSettings.style.display = 'none';
