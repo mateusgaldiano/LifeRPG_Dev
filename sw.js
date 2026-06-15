@@ -3,11 +3,12 @@
    Cache-first strategy + Local notifications scheduling
    ========================================================================== */
 
-const CACHE_NAME = 'liferpg-v21';
+const CACHE_NAME = 'liferpg-v22';
 const ASSETS_TO_CACHE = [
     './',
     'index.html',
     '1.core/styles.css',
+    '1.core/supabase-config.js',
     '1.core/app.js',
     'manifest.json',
     '2.assets/icons/icon-192.png',
