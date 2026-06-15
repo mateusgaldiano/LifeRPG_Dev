@@ -189,70 +189,108 @@ window.updateCloudStatusUI = function(online) {
 // GARANTIR PERFIL — cria persons + users se for o primeiro login
 // --------------------------------------------------------------------------
 async function ensureUserProfile(authUser) {
-  // 1. Verificar/criar em persons
-  let { data: person } = await supabaseClient
-    .from('persons')
-    .select('id')
-    .eq('id', authUser.id)
-    .maybeSingle();
-
-  if (!person) {
-    await supabaseClient.from('persons').insert({
-      id: authUser.id,
-      email: authUser.email,
-      name: authUser.user_metadata?.full_name || authUser.email,
-    });
-  }
-
-  // 2. Verificar/criar em users
-  let { data: userRow } = await supabaseClient
-    .from('users')
-    .select('id')
-    .eq('person_id', authUser.id)
-    .maybeSingle();
-
-  if (!userRow) {
-    // PRIMEIRO LOGIN — fazer upload do progresso local atual
-    const rankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
-    const { data: newUser } = await supabaseClient
-      .from('users')
-      .insert({
-        person_id: authUser.id,
-        username: gameState.playerName || authUser.email,
-        level: gameState.level,
-        xp: gameState.xp,
-        gold: gameState.gold,
-        streak: gameState.streak,
-        rank: rankLetter,
-        archetype: gameState.archetype,
-        active_skin: gameState.inventory?.activeSkin || 'default',
-        skills: gameState.skills,
-        settings: {
-          achievements: gameState.achievements || [],
-          unlockedSkins: gameState.inventory?.unlockedSkins || ['default'],
-        },
-        last_active_at: new Date().toISOString(),
-      })
+  try {
+    // ── PASSO 1: Verificar/criar em persons ──────────────────────────────
+    const { data: person, error: personSelectError } = await supabaseClient
+      .from('persons')
       .select('id')
-      .single();
+      .eq('id', authUser.id)
+      .maybeSingle();
 
-    window._currentUserDbId = newUser.id;
+    if (personSelectError) {
+      console.error('[Supabase] Erro ao buscar persons:', personSelectError.message);
+    }
 
-    // Upload de quests e history existentes localmente
-    await syncQuestsToSupabase();
-    await saveAllHistoryToSupabase();
-    await syncInventoryToSupabase();
+    if (!person) {
+      const { error: personInsertError } = await supabaseClient
+        .from('persons')
+        .insert({
+          id:    authUser.id,
+          email: authUser.email,
+          name:  authUser.user_metadata?.full_name || authUser.email,
+        });
 
-  } else {
-    window._currentUserDbId = userRow.id;
-  }
+      if (personInsertError) {
+        console.error('[Supabase] Erro ao criar person:', personInsertError.message, personInsertError.code);
+        if (typeof showSystemToast === 'function') {
+          showSystemToast('Erro ao criar perfil: ' + personInsertError.message);
+        }
+        return; // Não adianta continuar se persons falhou
+      }
+      console.log('[Supabase] Person criada com sucesso:', authUser.id);
+    }
 
-  // Inicializar Presença Global pós login/restauração de sessão
-  if (window._currentUserDbId) {
-    const userRankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
-    window.initPresence(window._currentUserDbId, gameState.playerName || authUser.email, gameState.level, userRankLetter);
+    // ── PASSO 2: Verificar/criar em users ────────────────────────────────
+    const { data: userRow, error: userSelectError } = await supabaseClient
+      .from('users')
+      .select('id')
+      .eq('person_id', authUser.id)
+      .maybeSingle();
+
+    if (userSelectError) {
+      console.error('[Supabase] Erro ao buscar users:', userSelectError.message);
+    }
+
+    if (!userRow) {
+      // PRIMEIRO LOGIN — fazer upload do progresso local atual
+      const rankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
+      const { data: newUser, error: userInsertError } = await supabaseClient
+        .from('users')
+        .insert({
+          person_id:      authUser.id,
+          username:       gameState.playerName || authUser.email,
+          level:          gameState.level,
+          xp:             gameState.xp,
+          gold:           gameState.gold,
+          streak:         gameState.streak,
+          rank:           rankLetter,
+          archetype:      gameState.archetype,
+          active_skin:    gameState.inventory?.activeSkin || 'default',
+          skills:         gameState.skills,
+          settings: {
+            achievements:  gameState.achievements || [],
+            unlockedSkins: gameState.inventory?.unlockedSkins || ['default'],
+          },
+          last_active_at: new Date().toISOString(),
+        })
+        .select('id')
+        .single();
+
+      if (userInsertError || !newUser) {
+        console.error('[Supabase] Erro ao criar user:', userInsertError?.message, userInsertError?.code);
+        if (typeof showSystemToast === 'function') {
+          showSystemToast('Erro ao salvar perfil do jogador: ' + (userInsertError?.message || 'resposta vazia'));
+        }
+        return;
+      }
+
+      console.log('[Supabase] User criado com sucesso:', newUser.id);
+      window._currentUserDbId = newUser.id;
+
+      // Upload de quests e history existentes localmente
+      await syncQuestsToSupabase();
+      await saveAllHistoryToSupabase();
+      await syncInventoryToSupabase();
+
+    } else {
+      window._currentUserDbId = userRow.id;
+      console.log('[Supabase] User existente carregado:', userRow.id);
+    }
+
+    // ── PRESENÇA GLOBAL ──────────────────────────────────────────────────
+    if (window._currentUserDbId) {
+      const userRankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
+      window.initPresence(window._currentUserDbId, gameState.playerName || authUser.email, gameState.level, userRankLetter);
+    }
+
+  } catch (err) {
+    console.error('[Supabase] Exceção inesperada em ensureUserProfile:', err);
+    if (typeof showSystemToast === 'function') {
+      showSystemToast('Erro inesperado no login. Verifique o console.');
+    }
   }
 }
+
 
 // --------------------------------------------------------------------------
 // SYNC FROM CLOUD — chamado após login, resolve conflitos
