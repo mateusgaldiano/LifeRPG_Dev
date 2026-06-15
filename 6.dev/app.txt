@@ -114,7 +114,10 @@ let gameState = {
     buffs: { autoHeal: false, doubleXp: false, shieldDays: 0 },
     inventory: { unlockedTitles: [], unlockedBorders: [], unlockedSkins: ['default'], activeTitle: null, activeBorder: null, activeSkin: 'default' },
     notificationTimes: { morningHour: 7, morningMin: 0, eveningHour: 19, eveningMin: 0 },
-    lastWeeklyReportYearWeek: ""
+    lastWeeklyReportYearWeek: "",
+    tutorialStep: 1,
+    tutorialCompleted: false,
+    friendsCount: 0
 };
 
 // Banco de Frases de Impacto
@@ -1729,6 +1732,9 @@ function updateUI() {
     renderRankPerks();
     renderWeeklyBoss();
     renderAchievements();
+    if (typeof renderTutorialBanner === 'function') {
+        renderTutorialBanner();
+    }
 }
 
 // Renderiza badges de sinergias ativas abaixo das barras de atributo
@@ -1838,6 +1844,15 @@ function calcStreakMultiplier() {
     if (streak >= 7)  return 1.20; // +20%
     if (streak >= 3)  return 1.10; // +10%
     return 1.0;
+}
+
+function getXpToNextForLevel(level) {
+    return Math.round(100 * Math.pow(level, 1.5));
+}
+
+function calcGroupMultiplier() {
+    const count = gameState.friendsCount || 0;
+    return 1 + (Math.min(count, 5) * 0.02);
 }
 
 // Multiplicador de Ouro baseado no streak atual
@@ -2260,19 +2275,29 @@ function addRewards(xpGained, goldGained) {
     const synergyXp   = getSynergyXpBonus();
     const synergyGold = getSynergyGoldBonus();
     const streakGold  = calcStreakGoldMultiplier();
+    const groupMult   = calcGroupMultiplier(); // Multiplicador de grupo
     
     const perkXp = getPerkXpBonus(); // +25% se Lenda Imortal ativo
-    const bonusXp = Math.round(xpGained * (multiplier + synergyXp + perkXp));
-    const bonusGold = Math.round(goldGained * (1 + synergyGold + streakGold));
+    const bonusXp = Math.round(xpGained * (multiplier + synergyXp + perkXp) * groupMult);
+    const bonusGold = Math.round(goldGained * (1 + synergyGold + streakGold) * groupMult);
     
     gameState.xp += bonusXp;
     gameState.gold += bonusGold;
+
+    // Trigger animations and floating texts
+    if (bonusGold > 0) {
+        animateGoldGain();
+        spawnFloatingText(bonusGold, 'gold');
+    }
+    if (bonusXp > 0) {
+        spawnFloatingText(bonusXp, 'xp');
+    }
 
     // Lógica de Level Up
     if (gameState.xp >= gameState.xpToNext) {
         gameState.level++;
         gameState.xp = gameState.xp - gameState.xpToNext;
-        gameState.xpToNext = Math.round(gameState.xpToNext * 1.3); // Escalabilidade de XP
+        gameState.xpToNext = getXpToNextForLevel(gameState.level); // Escalabilidade de XP
         
         // Sincroniza hábitos do novo nível desbloqueado
         syncQuestsByLevel();
@@ -2542,8 +2567,13 @@ function buyStoreItem(itemId) {
         'skin_arise_emperor': 600
     };
 
-    const cost = prices[itemId];
+    let cost = prices[itemId];
     if (!cost) return;
+
+    const isTutorialPromo = (gameState.tutorialStep === 2 && itemId === 'skin_shadow_master');
+    if (isTutorialPromo) {
+        cost = 50; // Preço promocional de tutorial
+    }
 
     if ((gameState.gold || 0) < cost) {
         showSystemToast(`⚠️ *OURO INSUFICIENTE.* O Sistema não faz caridade. Você precisa de ${cost} 💰.`);
@@ -2602,8 +2632,8 @@ function buyStoreItem(itemId) {
         if (!gameState.inventory) gameState.inventory = { unlockedTitles: [], unlockedBorders: [], unlockedSkins: ['default'], activeTitle: null, activeBorder: null, activeSkin: 'default' };
         if (!gameState.inventory.unlockedSkins) gameState.inventory.unlockedSkins = ['default'];
 
-        // Requisitos de Rank (Nível)
-        if (itemId === 'skin_shadow_master' && gameState.level < 10) {
+        // Requisitos de Rank (Nível) - ignorados se for a promo do tutorial
+        if (itemId === 'skin_shadow_master' && gameState.level < 10 && !isTutorialPromo) {
             showSystemToast("⚠️ *BLOQUEADO.* Esta skin exige Rank C (Nível 10+) para ser adquirida.");
             return;
         }
@@ -2622,11 +2652,19 @@ function buyStoreItem(itemId) {
             showSystemToast(`🎭 *Skin Equipada!* Seu avatar foi alterado.`);
             saveGameData();
             updateUI();
+            
+            if (isTutorialPromo) {
+                completeTutorialQuestline();
+            }
             return;
         } else {
             unlockedSkins.push(itemId);
             gameState.inventory.activeSkin = itemId;
             showSystemToast(`🎭 *Skin Desbloqueada e Equipada!*`);
+            
+            if (isTutorialPromo) {
+                completeTutorialQuestline();
+            }
         }
     }
 
@@ -2639,6 +2677,51 @@ function buyStoreItem(itemId) {
 // ==========================================================================
 // SISTEMA DE NOTIFICAÇÕES (TOASTS) E IMPACT QUOTES
 // ==========================================================================
+
+let floatingTextQueue = [];
+let isFloatingTextProcessing = false;
+
+function spawnFloatingText(amount, type = 'gold') {
+    floatingTextQueue.push({ amount, type });
+    processFloatingTextQueue();
+}
+
+function processFloatingTextQueue() {
+    if (isFloatingTextProcessing || floatingTextQueue.length === 0) return;
+    isFloatingTextProcessing = true;
+
+    const { amount, type } = floatingTextQueue.shift();
+    const chipSelector = type === 'gold' ? '.gold-chip' : '.xp-section';
+    const container = document.querySelector(chipSelector);
+    
+    if (container) {
+        const floatText = document.createElement('span');
+        floatText.className = `floating-reward-text ${type}`;
+        floatText.textContent = `+${amount}${type === 'gold' ? ' 🪙' : ' XP'}`;
+        
+        container.style.position = 'relative';
+        container.appendChild(floatText);
+
+        setTimeout(() => {
+            floatText.remove();
+        }, 1200);
+    }
+
+    setTimeout(() => {
+        isFloatingTextProcessing = false;
+        processFloatingTextQueue();
+    }, 300);
+}
+
+function animateGoldGain() {
+    const goldEl = document.getElementById('lbl-gold');
+    if (goldEl) {
+        goldEl.classList.remove('gold-animating');
+        void goldEl.offsetWidth; // Force reflow
+        goldEl.classList.add('gold-animating');
+        setTimeout(() => goldEl.classList.remove('gold-animating'), 600);
+    }
+}
 
 function showSystemToast(text, type = '') {
     const container = document.getElementById('toast-container');
@@ -2723,7 +2806,11 @@ function setupEventListeners() {
         if (difficulty === 'easy') { xp = 10; gold = 5; }
         else if (difficulty === 'hard') { xp = 50; gold = 30; }
         gameState.sideQuests.push({ id: 'sq-' + Date.now(), title, type: 'side', icon, difficulty, completed: false, xp, gold });
-        saveGameData(); renderQuests();
+        saveGameData(); 
+        renderQuests();
+        if (typeof checkAndProgressTutorialStep1 === 'function') {
+            checkAndProgressTutorialStep1();
+        }
         modalSq.style.display = 'none';
         document.getElementById('form-sidequest').reset();
     });
@@ -2921,7 +3008,10 @@ function loadGameData() {
             history: {}, // Store daily logs { "2026-06-08": { status: "perfect", count: 3, total: 3, completedIds: [] } }
             buffs: { autoHeal: false, doubleXp: false, shieldDays: 0 },
             inventory: { unlockedTitles: [], unlockedBorders: [], unlockedSkins: ['default'], activeTitle: null, activeBorder: null, activeSkin: 'default' },
-            lastWeeklyReportYearWeek: ""
+            lastWeeklyReportYearWeek: "",
+            tutorialStep: 1,
+            tutorialCompleted: false,
+            friendsCount: 0
         };
         saveGameData();
         window.location.reload();
@@ -3029,6 +3119,13 @@ function loadGameData() {
         // Migration: Ensure buffs and inventory exist
         if (!parsed.buffs) {
             parsed.buffs = { autoHeal: false, doubleXp: false, shieldDays: 0 };
+        }
+        if (parsed.tutorialStep === undefined && parsed.tutorialCompleted === undefined) {
+            parsed.tutorialStep = null;
+            parsed.tutorialCompleted = true;
+        }
+        if (parsed.friendsCount === undefined) {
+            parsed.friendsCount = 0;
         }
         if (!parsed.inventory) {
             parsed.inventory = { unlockedTitles: [], unlockedBorders: [], unlockedSkins: ['default'], activeTitle: null, activeBorder: null, activeSkin: 'default' };
@@ -3147,6 +3244,16 @@ function loadGameData() {
     checkWeeklyBossExpiry();
     if (!gameState.activeDungeon && hasSkillLV3()) {
         setTimeout(() => spawnDungeon(), 3000);
+    }
+
+    // Recalcula e migra o xpToNext com base na curva exponencial
+    if (typeof getXpToNextForLevel === 'function') {
+        const expectedXpToNext = getXpToNextForLevel(gameState.level);
+        if (gameState.xpToNext !== expectedXpToNext) {
+            console.log(`[Migration] Atualizando xpToNext do nível ${gameState.level} de ${gameState.xpToNext} para ${expectedXpToNext}`);
+            gameState.xpToNext = expectedXpToNext;
+            saveGameData();
+        }
     }
 }
 
@@ -3851,7 +3958,7 @@ function claimWeeklyReport(rewards, weekStr) {
         if (gameState.xp >= gameState.xpToNext) {
             gameState.level++;
             gameState.xp = gameState.xp - gameState.xpToNext;
-            gameState.xpToNext = Math.round(gameState.xpToNext * 1.3);
+            gameState.xpToNext = getXpToNextForLevel(gameState.level);
             syncQuestsByLevel();
             triggerLevelUpOverlay();
             checkAndActivateBossQuest();
@@ -4009,6 +4116,9 @@ function addHabitFromLibrary(h, type = 'daily') {
     }
 
     saveGameData();
+    if (typeof checkAndProgressTutorialStep1 === 'function') {
+        checkAndProgressTutorialStep1();
+    }
     renderQuests();
 
     const modalConfirm = document.getElementById('modal-confirm-habit');
@@ -4318,7 +4428,7 @@ async function loadChatMessages() {
         .select('*')
         .eq('channel', 'global')
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(20);
 
     if (error) {
         console.error('Erro ao buscar mensagens do chat:', error.message);
@@ -5416,5 +5526,93 @@ function setupSocialModalListeners() {
             }
         });
     }
+}
+
+// Renderiza o banner dinâmico do tutorial questline
+function renderTutorialBanner() {
+    const banner = document.getElementById('tutorial-questline-banner');
+    if (!banner) return;
+
+    if (gameState.tutorialCompleted || !gameState.tutorialStep) {
+        banner.style.display = 'none';
+        return;
+    }
+
+    banner.style.display = 'block';
+
+    if (gameState.tutorialStep === 1) {
+        banner.innerHTML = `
+            <div class="tutorial-banner">
+                <div class="tutorial-header">
+                    <span class="tutorial-badge">QUEST DE APRENDIZADO</span>
+                    <span class="tutorial-step">ETAPA 1 de 2</span>
+                </div>
+                <h3 class="tutorial-title">⚔️ O Despertar da Produtividade</h3>
+                <p class="tutorial-desc">Comece sua jornada criando sua primeira tarefa! Adicione um hábito da biblioteca ou clique em <b>"+"</b> abaixo do radar para criar uma Side Quest personalizada.</p>
+                <div class="tutorial-footer">
+                    <span class="tutorial-reward">🎁 RECOMPENSA: <b>+50 Ouro 🪙</b></span>
+                </div>
+            </div>
+        `;
+    } else if (gameState.tutorialStep === 2) {
+        banner.innerHTML = `
+            <div class="tutorial-banner">
+                <div class="tutorial-header">
+                    <span class="tutorial-badge" style="color: var(--neon-purple); border-color: var(--neon-purple);">QUEST DE APRENDIZADO</span>
+                    <span class="tutorial-step">ETAPA 2 de 2</span>
+                </div>
+                <h3 class="tutorial-title">🎭 A Taverna e a Identidade</h3>
+                <p class="tutorial-desc">Excelente! Você ganhou 50 moedas de Ouro. Agora, navegue até a aba <b>TAVERNA</b> (no rodapé), compre e equipe a skin <b>Mestre das Sombras</b> (liberada por apenas 50 Ouro e sem exigência de nível durante o tutorial!).</p>
+                <div class="tutorial-footer">
+                    <span class="tutorial-reward">🎁 RECOMPENSA FINAL: <b>+50 XP ⚡ +20 Ouro 🪙</b></span>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Progride o tutorial para a etapa 2 ao criar a primeira missão
+function checkAndProgressTutorialStep1() {
+    if (gameState.tutorialStep === 1) {
+        gameState.tutorialStep = 2;
+        gameState.gold = (gameState.gold || 0) + 50;
+        saveGameData();
+        updateUI();
+        
+        // Efeitos visuais
+        animateGoldGain();
+        spawnFloatingText(50, 'gold');
+        
+        showSystemToast("🏆 *TUTORIAL:* Missão criada! Você recebeu +50 🪙. Agora compre e equipe sua primeira skin na Taverna!");
+    }
+}
+
+// Conclui o tutorial ao comprar a skin Shadow Master no passo 2
+function completeTutorialQuestline() {
+    gameState.tutorialStep = null;
+    gameState.tutorialCompleted = true;
+    
+    // Concede recompensas finais
+    gameState.xp = (gameState.xp || 0) + 50;
+    gameState.gold = (gameState.gold || 0) + 20;
+    
+    // Verifica level up
+    if (gameState.xp >= gameState.xpToNext) {
+        gameState.level++;
+        gameState.xp = gameState.xp - gameState.xpToNext;
+        gameState.xpToNext = getXpToNextForLevel(gameState.level);
+        syncQuestsByLevel();
+        triggerLevelUpOverlay();
+        checkAndActivateBossQuest();
+    }
+    
+    saveGameData();
+    updateUI();
+    
+    // Efeitos visuais
+    spawnFloatingText(50, 'xp');
+    spawnFloatingText(20, 'gold');
+    
+    showSystemToast("🎉 *TUTORIAL CONCLUÍDO!* Você aprendeu os caminhos do Sistema e recebeu +50 XP e +20 🪙!");
 }
 

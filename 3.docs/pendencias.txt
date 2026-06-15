@@ -36,3 +36,6 @@ Estas são as únicas pendências que ainda não foram concluídas no projeto.
 6. Acesso de Leitura ao Chat Global (Anônimo)
    - [x] Decidido: O chat global será legível por visitantes não autenticados (modo leitura) para atrair engajamento. Envio de mensagens e exibição na lista de jogadores online (Presence) continuam restritos a usuários logados via Google.
 
+7. Chip de Multiplicador de Grupo (#group-multiplier-chip) Oculto
+   - O chip permanecerá oculto na interface (`display: none` permanente) até que o bug de concorrência/conflito `ensureUserProfile` (erros 403/409) no Supabase seja resolvido, uma vez que a contagem de amigos (`friendsCount`) depende de `syncFromCloud` funcionar perfeitamente em produção.
+

@@ -335,6 +335,22 @@ window.syncFromCloud = async function() {
     await saveAllHistoryToSupabase();
     await syncInventoryToSupabase();
   }
+
+  // Sincronizar contagem de amigos aceitos para o multiplicador de grupo
+  try {
+    const { count, error: countError } = await supabaseClient
+      .from('friendships')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'accepted')
+      .or(`requester_id.eq.${window._currentUserDbId},target_id.eq.${window._currentUserDbId}`);
+    
+    if (!countError && gameState) {
+      gameState.friendsCount = count || 0;
+      localStorage.setItem('lifeRPG_gameState', JSON.stringify(gameState));
+    }
+  } catch (err) {
+    console.error('[Supabase] Erro ao contar amigos:', err);
+  }
 };
 
 // --------------------------------------------------------------------------
