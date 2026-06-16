@@ -2257,7 +2257,7 @@ function syncQuestsByLevel() {
             updatedQuests.push(fresh);
             
             // Notifica o usuário no chat via Iroh caso não seja a primeira carga do app
-            if (gameState.messages.length > 0) {
+            if (gameState.messages && gameState.messages.length > 0) {
                 setTimeout(() => {
                     showSystemToast(`🔥 *SISTEMA:* Incrível, ${gameState.playerName || 'Guerreiro'}! Ao alcançar o nível *${level}*, você desbloqueou uma nova quest diária: *"${dbHabit.title}"*! Que ela fortaleça a sua rotina!`);
                 }, 1500);
@@ -3119,6 +3119,9 @@ function loadGameData() {
         // Migration: Ensure buffs and inventory exist
         if (!parsed.buffs) {
             parsed.buffs = { autoHeal: false, doubleXp: false, shieldDays: 0 };
+        }
+        if (!parsed.messages) {
+            parsed.messages = [];
         }
         if (parsed.tutorialStep === undefined && parsed.tutorialCompleted === undefined) {
             parsed.tutorialStep = null;
@@ -5531,6 +5534,21 @@ function setupSocialModalListeners() {
 // Renderiza o banner dinâmico do tutorial questline
 function renderTutorialBanner() {
     const banner = document.getElementById('tutorial-questline-banner');
+    
+    // Atualiza a visualização do card da skin "Mestre das Sombras" se estiver na etapa 2
+    const shadowMasterCard = document.querySelector('div[onclick="buyStoreItem(\'skin_shadow_master\')"]');
+    if (shadowMasterCard) {
+        const costEl = shadowMasterCard.querySelector('.reward-cost');
+        const descEl = shadowMasterCard.querySelector('p');
+        if (gameState.tutorialStep === 2) {
+            if (costEl) costEl.innerText = '50 OURO';
+            if (descEl) descEl.innerHTML = 'Guerreiro envolto em sombras com brilho roxo. <span style="color: var(--neon-gold); font-weight: bold;">(Promoção do Tutorial - Sem trava de nível!)</span>';
+        } else {
+            if (costEl) costEl.innerText = '250 OURO';
+            if (descEl) descEl.innerText = 'Guerreiro envolto em sombras com brilho roxo. (Requer Rank C)';
+        }
+    }
+
     if (!banner) return;
 
     if (gameState.tutorialCompleted || !gameState.tutorialStep) {
