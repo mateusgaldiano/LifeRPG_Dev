@@ -4732,6 +4732,8 @@ function initSocialSubTabs() {
             
             if (subtabName === 'friends') {
                 loadFriendsList();
+            } else if (subtabName === 'ranking') {
+                loadGlobalRanking();
             }
         });
     });
@@ -5683,6 +5685,140 @@ function setupRadarToggle() {
         const nowCollapsed = radarWrapper.style.display !== 'none';
         localStorage.setItem('lifeRPG_radarCollapsed', nowCollapsed ? 'true' : 'false');
         setRadarState(nowCollapsed);
+    });
+}
+
+// Carrega a classificação global do ranking do Supabase e renderiza na UI
+async function loadGlobalRanking() {
+    const rankingContainer = document.getElementById('ranking-list-container');
+    if (!rankingContainer) return;
+
+    if (!window._currentUserDbId) {
+        rankingContainer.innerHTML = '<div class="friends-empty-state">Faça login com o Google para ver a classificação global.</div>';
+        return;
+    }
+
+    rankingContainer.innerHTML = '<div class="friends-empty-state">Carregando classificação do Sistema...</div>';
+
+    // 1. Obter ranking ordenado por level DESC, xp DESC, username ASC da view pública
+    const { data: ranking, error } = await supabaseClient
+        .from('public_profiles')
+        .select('id, username, level, rank, xp, active_skin')
+        .order('level', { ascending: false })
+        .order('xp', { ascending: false })
+        .order('username', { ascending: true })
+        .limit(50);
+
+    if (error) {
+        console.error('Erro ao carregar ranking:', error.message);
+        rankingContainer.innerHTML = '<div class="friends-empty-state" style="color: var(--neon-red);">⚠️ Erro ao carregar ranking.</div>';
+        return;
+    }
+
+    if (!ranking || ranking.length === 0) {
+        rankingContainer.innerHTML = '<div class="friends-empty-state">Nenhum guerreiro registrado no Sistema.</div>';
+        return;
+    }
+
+    rankingContainer.innerHTML = '';
+
+    // Mapear status dos jogadores online cruzando com Presence
+    // Observação: Status depende do Presence Store ativo (rastreia apenas quem está com modal social aberto)
+    const onlinePresenceState = window.onlineUsersState || {};
+    const onlineUserIds = new Set(
+        Object.values(onlinePresenceState)
+            .flat()
+            .map(p => p.user_id)
+    );
+
+    ranking.forEach((user, index) => {
+        const isOnline = onlineUserIds.has(user.id);
+        const position = index + 1;
+
+        const row = document.createElement('div');
+        row.className = 'online-user-item';
+        row.style.cursor = 'pointer';
+        row.style.padding = '10px 14px';
+        row.style.border = '1px solid var(--border-color)';
+        row.style.borderRadius = 'var(--radius-md)';
+        row.style.marginBottom = '8px';
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        
+        // Destacar o próprio usuário no ranking
+        if (user.id === window._currentUserDbId) {
+            row.style.border = '1px solid var(--neon-purple)';
+            row.style.background = 'rgba(139, 92, 246, 0.05)';
+        } else {
+            row.style.background = isOnline ? 'rgba(0, 242, 254, 0.01)' : 'rgba(0, 0, 0, 0.1)';
+        }
+
+        row.addEventListener('click', () => {
+            openPlayerProfile(user.id);
+        });
+
+        // Posição no ranking (medalhas para Top 3)
+        const posSpan = document.createElement('span');
+        posSpan.style.fontFamily = 'var(--font-hud)';
+        posSpan.style.fontSize = '12px';
+        posSpan.style.fontWeight = 'bold';
+        posSpan.style.width = '24px';
+        posSpan.style.textAlign = 'center';
+        posSpan.style.marginRight = '8px';
+        posSpan.style.display = 'inline-block';
+
+        if (position === 1) {
+            posSpan.textContent = '🥇';
+            posSpan.style.fontSize = '15px';
+        } else if (position === 2) {
+            posSpan.textContent = '🥈';
+            posSpan.style.fontSize = '15px';
+        } else if (position === 3) {
+            posSpan.textContent = '🥉';
+            posSpan.style.fontSize = '15px';
+        } else {
+            posSpan.textContent = `#${position}`;
+            posSpan.style.color = 'var(--text-muted)';
+        }
+
+        const avatar = document.createElement('img');
+        avatar.src = getPlayerAvatarSrc(user.active_skin, user.rank);
+        avatar.style.width = '36px';
+        avatar.style.height = '36px';
+        avatar.style.borderRadius = '50%';
+        avatar.style.marginLeft = '4px';
+
+        const info = document.createElement('div');
+        info.className = 'online-user-info';
+        info.style.marginLeft = '12px';
+        info.style.flex = '1';
+
+        const top = document.createElement('div');
+        top.className = 'online-user-top';
+        const name = document.createElement('span');
+        name.className = 'online-user-name';
+        name.textContent = user.username;
+        top.appendChild(name);
+        
+        const lvl = document.createElement('div');
+        lvl.className = 'online-user-level';
+        lvl.textContent = `Nível ${user.level || 1} | RANK ${(user.rank || 'E').toUpperCase()} | ${user.xp || 0} XP`;
+        info.appendChild(top);
+        info.appendChild(lvl);
+
+        const statusText = document.createElement('span');
+        statusText.style.fontSize = '9px';
+        statusText.style.color = isOnline ? 'var(--neon-cyan)' : 'var(--text-muted)';
+        statusText.style.fontFamily = 'var(--font-hud)';
+        statusText.style.fontWeight = 'bold';
+        statusText.textContent = isOnline ? 'ONLINE' : 'OFFLINE';
+
+        row.appendChild(posSpan);
+        row.appendChild(avatar);
+        row.appendChild(info);
+        row.appendChild(statusText);
+
+        rankingContainer.appendChild(row);
     });
 }
 

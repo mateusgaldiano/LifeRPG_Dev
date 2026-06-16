@@ -101,7 +101,7 @@ CREATE POLICY "Atualizar status (aceitar/bloquear)"
 -- 4. VIEW DE PERFIS PÚBLICOS (BUSCA DE JOGADORES)
 -- ────────────────────────────────────────────────────────────────
 CREATE OR REPLACE VIEW public_profiles AS 
-  SELECT id, username, level, rank FROM users;
+  SELECT id, username, level, rank, xp, active_skin FROM users;
 
 -- Garante que apenas usuários autenticados possam buscar jogadores
 REVOKE ALL ON public_profiles FROM public;

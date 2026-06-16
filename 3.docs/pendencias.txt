@@ -37,3 +37,7 @@ Estas são as únicas pendências que ainda não foram concluídas no projeto.
 7. Chip de Multiplicador de Grupo (#group-multiplier-chip) Oculto
    - O chip permanecerá oculto na interface (`display: none` permanente) até que o bug de concorrência/conflito `ensureUserProfile` (erros 403/409) no Supabase seja resolvido, uma vez que a contagem de amigos (`friendsCount`) depende de `syncFromCloud` funcionar perfeitamente em produção.
 
+8. Dependência de Presence no Ranking Global
+   - A exibição do status online/offline na aba do Ranking depende exclusivamente do canal de Presence do Chat Global. O status só exibirá "ONLINE" para jogadores que estiverem com o modal social aberto ativamente. Em cenários de poucos usuários simultâneos, a maioria dos perfis constará como offline.
+
+

@@ -342,6 +342,7 @@
                 <div class="social-sub-tabs" style="margin-top: 15px; margin-bottom: 15px;">
                     <button class="sub-tab-btn active" data-subtab="chat">CHAT GLOBAL</button>
                     <button class="sub-tab-btn" data-subtab="friends">AMIGOS <span id="pending-requests-badge" class="badge-pending" style="display:none;">0</span></button>
+                    <button class="sub-tab-btn" data-subtab="ranking">RANKING</button>
                     <button class="sub-tab-btn" data-subtab="clan-details">CLÃ</button>
                 </div>
 
@@ -410,6 +411,18 @@
                                 <div id="friends-list-container" class="friends-list-v">
                                     <div class="friends-empty-state">Nenhum amigo adicionado ainda. Adicione jogadores pelo chat ou buscando o nome!</div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-ABA 3: RANKING GLOBAL -->
+                    <div id="subtab-ranking" class="sub-tab-content" style="display:none; flex: 1; overflow-y: auto;">
+                        <div class="community-card" style="padding: 16px 20px;">
+                            <div class="online-header" style="margin-bottom: 15px; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
+                                <span class="font-hud online-title" style="color: var(--neon-gold); font-size: 11px; letter-spacing: 1.5px;">👑 CLASSIFICAÇÃO DO SISTEMA</span>
+                            </div>
+                            <div id="ranking-list-container" class="friends-list-v" style="display: flex; flex-direction: column; gap: 8px;">
+                                <div class="friends-empty-state">Carregando classificação do Sistema...</div>
                             </div>
                         </div>
                     </div>
