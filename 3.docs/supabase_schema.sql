@@ -165,6 +165,17 @@ VALUES
 -- SEGURANÇA — Row Level Security (RLS)
 -- ================================================================
 ALTER TABLE persons           ENABLE ROW LEVEL SECURITY;
+
+-- Políticas de acesso para a tabela persons
+CREATE POLICY "persons_insert_own" ON persons
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "persons_select_own" ON persons
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "persons_update_own" ON persons
+  FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+
 ALTER TABLE users             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quests            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE history           ENABLE ROW LEVEL SECURITY;

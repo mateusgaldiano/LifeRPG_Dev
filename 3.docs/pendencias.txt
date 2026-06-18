@@ -10,13 +10,9 @@ Estas são as únicas pendências que ainda não foram concluídas no projeto.
 ---
 
 ## 🟡 MÉDIO
-2. Push Notifications Reais (OS/Web Push)
-   - Envio de notificações de lembrete com o PWA fechado.
-   - Requer Service Worker + Web Push API (Firebase Cloud Messaging ou servidor próprio para chaves VAPID).
-
-3. Ranking Global entre Amigos
-   - Aba de Leaderboard/Guilda com pontuação de amigos (XP/Level semanal ou total).
-   - Bloqueado por: Cloud Save (Firebase Firestore).
+3. Ranking de Amigos / Guilda
+   - Filtrar aba de Ranking para mostrar apenas amigos conectados (requer infraestrutura adicional de relacionamento de amizade ativa).
+   - Nota: O Ranking Global (Top 50) já está 100% implementado e ativo no banco de dados.
 
 ---
 
@@ -34,8 +30,8 @@ Estas são as únicas pendências que ainda não foram concluídas no projeto.
 6. Acesso de Leitura ao Chat Global (Anônimo)
    - [x] Decidido: O chat global será legível por visitantes não autenticados (modo leitura) para atrair engajamento. Envio de mensagens e exibição na lista de jogadores online (Presence) continuam restritos a usuários logados via Google.
 
-7. Chip de Multiplicador de Grupo (#group-multiplier-chip) Oculto
-   - O chip permanecerá oculto na interface (`display: none` permanente) até que o bug de concorrência/conflito `ensureUserProfile` (erros 403/409) no Supabase seja resolvido, uma vez que a contagem de amigos (`friendsCount`) depende de `syncFromCloud` funcionar perfeitamente em produção.
+7. Chip de Multiplicador de Grupo (#group-multiplier-chip) Liberado
+   - [x] Resolvido: O bug de concorrência/conflito `ensureUserProfile` (erros 403/409) no Supabase foi solucionado com as políticas RLS na tabela `persons`. O chip de multiplicador de grupo e a contagem de amigos (`friendsCount`) agora funcionam perfeitamente em produção.
 
 8. Dependência de Presence no Ranking Global
    - A exibição do status online/offline na aba do Ranking depende exclusivamente do canal de Presence do Chat Global. O status só exibirá "ONLINE" para jogadores que estiverem com o modal social aberto ativamente. Em cenários de poucos usuários simultâneos, a maioria dos perfis constará como offline.

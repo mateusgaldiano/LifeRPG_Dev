@@ -421,6 +421,11 @@
                             <div class="online-header" style="margin-bottom: 15px; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
                                 <span class="font-hud online-title" style="color: var(--neon-gold); font-size: 11px; letter-spacing: 1.5px;">👑 CLASSIFICAÇÃO DO SISTEMA</span>
                             </div>
+                            <!-- Alternância de Ranking: Global vs Amigos -->
+                            <div class="ranking-mode-tabs" style="display: flex; gap: 8px; margin-bottom: 15px;">
+                                <button id="btn-ranking-global" class="sub-tab-btn active" onclick="switchRankingMode('global')" style="flex: 1; padding: 8px; font-size: 0.75rem; justify-content: center; height: 32px;">GLOBAL</button>
+                                <button id="btn-ranking-friends" class="sub-tab-btn" onclick="switchRankingMode('friends')" style="flex: 1; padding: 8px; font-size: 0.75rem; justify-content: center; height: 32px;">AMIGOS</button>
+                            </div>
                             <div id="ranking-list-container" class="friends-list-v" style="display: flex; flex-direction: column; gap: 8px;">
                                 <div class="friends-empty-state">Carregando classificação do Sistema...</div>
                             </div>
@@ -495,15 +500,45 @@
                             <!-- Escudo -->
                             <div class="reward-card" onclick="buyStoreItem('buff_shield')">
                                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                    <div>
-                                        <h3>Escudo de Ferro</h3>
-                                        <p style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Garante 1 carga do escudo azul que protege atributos.</p>
-                                    </div>
-                                    <span style="font-size: 1.5rem;">🛡️</span>
+                                     <div>
+                                         <h3>Escudo de Ferro</h3>
+                                         <p style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Garante 1 carga do escudo azul que protege atributos.</p>
+                                     </div>
+                                     <span style="font-size: 1.5rem;">🛡️</span>
                                 </div>
                                 <div class="reward-bottom">
-                                    <span class="reward-cost">150 OURO</span>
-                                    <button class="btn-buy">COMPRAR</button>
+                                     <span class="reward-cost">150 OURO</span>
+                                     <button class="btn-buy">COMPRAR</button>
+                                </div>
+                            </div>
+
+                            <!-- Pergaminho do Foco Lendário -->
+                            <div class="reward-card" onclick="buyStoreItem('buff_legendary_focus')">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                     <div>
+                                         <h3 style="color:var(--neon-purple);">Pergaminho do Foco Lendário</h3>
+                                         <p style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Sua próxima missão concluída concede o triplo (x3) de Ouro. (Requer Nível 10)</p>
+                                     </div>
+                                     <span style="font-size: 1.5rem;">📜</span>
+                                </div>
+                                <div class="reward-bottom">
+                                     <span class="reward-cost">400 OURO</span>
+                                     <button class="btn-buy">COMPRAR</button>
+                                </div>
+                            </div>
+
+                            <!-- Cálice da Imortalidade -->
+                            <div class="reward-card" onclick="buyStoreItem('buff_immortality')">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                     <div>
+                                         <h3 style="color:var(--neon-gold);">Cálice da Imortalidade</h3>
+                                         <p style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Restaura seus escudos ao máximo (3/3). (Requer Nível 15)</p>
+                                     </div>
+                                     <span style="font-size: 1.5rem;">👑</span>
+                                </div>
+                                <div class="reward-bottom">
+                                     <span class="reward-cost">800 OURO</span>
+                                     <button class="btn-buy">COMPRAR</button>
                                 </div>
                             </div>
                         </div>
@@ -1063,7 +1098,7 @@
     <script src="1.core/supabase-config.js"></script>
 
     <!-- Script Principal -->
-    <script src="1.core/app.js"></script>
+    <script type="module" src="1.core/app.js"></script>
 
 
     <!-- Banner de Instalação PWA -->

@@ -3,13 +3,20 @@
    Cache-first strategy + Local notifications scheduling
    ========================================================================== */
 
-const CACHE_NAME = 'liferpg-v32';
+const CACHE_NAME = 'liferpg-v34';
 const ASSETS_TO_CACHE = [
     './',
     'index.html',
     '1.core/styles.css',
     '1.core/supabase-config.js',
     '1.core/app.js',
+    '1.core/modules/state.js',
+    '1.core/modules/utils.js',
+    '1.core/modules/ui.js',
+    '1.core/modules/game-logic.js',
+    '1.core/modules/weekly-report.js',
+    '1.core/modules/social.js',
+    '1.core/modules/pwa.js',
     'manifest.json',
     '2.assets/icons/icon-192.png',
     '2.assets/icons/icon-512.png',
@@ -191,5 +198,31 @@ self.addEventListener('notificationclick', (event) => {
                 return clients.openWindow('./');
             }
         })
+    );
+});
+
+// ── PUSH EVENTS: Native Web Push listener ─────────────────────────────────────
+self.addEventListener('push', (event) => {
+    let payload = { title: '⚡ THE SYSTEM', body: 'Alerta geral do sistema.', tag: 'general-push' };
+    if (event.data) {
+        try {
+            payload = event.data.json();
+        } catch (e) {
+            payload = { title: '⚡ THE SYSTEM', body: event.data.text(), tag: 'general-push' };
+        }
+    }
+    
+    const options = {
+        body: payload.body,
+        icon: '2.assets/icons/icon-192.png',
+        badge: '2.assets/icons/icon-192.png',
+        vibrate: [200, 100, 200],
+        tag: payload.tag || 'general-push',
+        renotify: true,
+        data: { url: payload.url || './' }
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(payload.title, options)
     );
 });

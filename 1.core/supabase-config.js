@@ -89,6 +89,16 @@ window.logoutSupabase = async function() {
     presenceChannel = null;
     presenceSubscribed = false;
   }
+  if (typeof window.unsubscribeUserFromPush === 'function') {
+    try {
+      await window.unsubscribeUserFromPush();
+    } catch (e) {
+      console.error('[Supabase Auth] Erro ao remover push no logout:', e);
+    }
+  }
+  // Limpa o cache local do chat de outros usuários por privacidade
+  localStorage.removeItem('lifeRPG_chatCache');
+
   await supabaseClient.auth.signOut();
   window._currentUserDbId = null;
   // Atualizar UI para estado "Não sincronizado"
@@ -104,6 +114,9 @@ window.initSupabase = function() {
       updateCloudStatusUI(true);
       await ensureUserProfile(session.user);
       await syncFromCloud();
+      if (typeof window.subscribeUserToPush === 'function' && 'Notification' in window && Notification.permission === 'granted') {
+        window.subscribeUserToPush();
+      }
     } else {
       updateCloudStatusUI(false);
     }
@@ -113,7 +126,12 @@ window.initSupabase = function() {
   supabaseClient.auth.getSession().then(({ data }) => {
     if (data?.session?.user) {
       updateCloudStatusUI(true);
-      ensureUserProfile(data.session.user).then(() => syncFromCloud());
+      ensureUserProfile(data.session.user).then(() => {
+        syncFromCloud();
+        if (typeof window.subscribeUserToPush === 'function' && 'Notification' in window && Notification.permission === 'granted') {
+          window.subscribeUserToPush();
+        }
+      });
     }
   });
 };
