@@ -378,28 +378,44 @@ window.saveToSupabase = async function() {
   if (!window._currentUserDbId) return;
 
   const rankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
-  const { error } = await supabaseClient
-    .from('users')
-    .update({
-      username:    gameState.playerName,
-      level:       gameState.level,
-      xp:          gameState.xp,
-      gold:        gameState.gold,
-      streak:      gameState.streak,
-      rank:        rankLetter,
-      archetype:   gameState.archetype,
-      active_skin: gameState.inventory?.activeSkin || 'default',
-      skills:      gameState.skills,
-      settings: {
-        achievements: gameState.achievements || [],
-        unlockedSkins: gameState.inventory?.unlockedSkins || ['default'],
-      },
-      last_active_at: new Date().toISOString(),
-    })
-    .eq('id', window._currentUserDbId);
+  
+  const { error } = await supabaseClient.rpc('sync_user_state_secure', {
+    p_username:    gameState.playerName,
+    p_level:       gameState.level,
+    p_xp:          gameState.xp,
+    p_gold:        gameState.gold,
+    p_streak:      gameState.streak,
+    p_rank:        rankLetter,
+    p_archetype:   gameState.archetype,
+    p_active_skin: gameState.inventory?.activeSkin || 'default',
+    p_skills:      gameState.skills,
+    p_settings: {
+      achievements: gameState.achievements || [],
+      unlockedSkins: gameState.inventory?.unlockedSkins || ['default'],
+    }
+  });
 
   if (error) {
-    console.error('[Supabase] saveToSupabase:', error.message);
+    let friendlyMessage = `Erro inesperado: ${error.message}`;
+    if (error.message.includes('[VAL_ERR_LEVEL_REGRESSION]')) {
+      friendlyMessage = 'Falha de validação: Regressão de Nível não permitida.';
+    } else if (error.message.includes('[VAL_ERR_XP_OVERFLOW]')) {
+      friendlyMessage = 'Falha de validação: Consistência de XP (overflow de XP sem subir de nível).';
+    } else if (error.message.includes('[VAL_ERR_INVALID_RANK]')) {
+      friendlyMessage = 'Falha de validação: Rank inválido para o nível enviado.';
+    } else if (error.message.includes('[VAL_ERR_GOLD_LIMIT_EXCEEDED]')) {
+      friendlyMessage = 'Falha de validação: Limite fixo de ganho de Ouro (+2000) excedido.';
+    } else if (error.message.includes('[VAL_ERR_XP_LIMIT_EXCEEDED]')) {
+      friendlyMessage = 'Falha de validação: Limite fixo de ganho de XP (+2000) excedido.';
+    } else if (error.message.includes('[VAL_ERR_USER_NOT_FOUND]')) {
+      friendlyMessage = 'Falha de validação: Usuário não encontrado no banco.';
+    } else if (error.status === 401 || error.status === 403) {
+      friendlyMessage = 'Acesso RLS ou permissão negada.';
+    }
+    console.error(`[Supabase Sync Error] ${friendlyMessage}`, error);
+    if (typeof showSystemToast === 'function') {
+      showSystemToast(`⚠️ Erro de Sincronização: ${friendlyMessage}`);
+    }
   } else {
     // Re-trackear presença com os dados de nível/rank atualizados
     if (typeof window.initPresence === 'function') {
