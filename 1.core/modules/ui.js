@@ -1715,12 +1715,42 @@ function setupRadarToggle() {
     });
 }
 
+function switchTrophiesTab(tabName) {
+    const btnTrophies = document.getElementById('subtab-btn-trophies');
+    const btnRanking = document.getElementById('subtab-btn-trophies-ranking');
+    const panelTrophies = document.getElementById('panel-trophies');
+    const panelRanking = document.getElementById('panel-ranking');
+
+    if (!btnTrophies || !btnRanking || !panelTrophies || !panelRanking) return;
+
+    if (tabName === 'trophies') {
+        btnTrophies.classList.add('active');
+        btnRanking.classList.remove('active');
+        panelTrophies.classList.add('active');
+        panelTrophies.style.display = '';
+        panelRanking.classList.remove('active');
+        panelRanking.style.display = 'none';
+    } else {
+        btnTrophies.classList.remove('active');
+        btnRanking.classList.add('active');
+        panelTrophies.classList.remove('active');
+        panelTrophies.style.display = 'none';
+        panelRanking.classList.add('active');
+        panelRanking.style.display = '';
+        
+        if (typeof window.switchRankingMode === 'function') {
+            window.switchRankingMode(window.currentRankingMode || 'global');
+        }
+    }
+}
+
 export {
     renderAchievements,
     drawRadarChart,
     showFeatureUnlockModal,
     initTabs,
     switchTavernaTab,
+    switchTrophiesTab,
     confirmRemoveQuest,
     equipItem,
     renderInventory,

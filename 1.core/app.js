@@ -73,7 +73,8 @@ import {
     renderGlobalDashboard,
     debouncedDrawRadarChart,
     setupRadarToggle,
-    checkFeatureUnlocks
+    checkFeatureUnlocks,
+    switchTrophiesTab
 } from './modules/ui.js';
 
 import {
@@ -213,6 +214,7 @@ window.renderGlobalDashboard = renderGlobalDashboard;
 window.debouncedDrawRadarChart = debouncedDrawRadarChart;
 window.setupRadarToggle = setupRadarToggle;
 window.checkFeatureUnlocks = checkFeatureUnlocks;
+window.switchTrophiesTab = switchTrophiesTab;
 
 // Bind Game Logic
 window.spawnDungeon = spawnDungeon;
@@ -294,6 +296,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof setupSocialModalListeners === 'function') setupSocialModalListeners();
     setupInstallPrompt();
     setupHabitLibraryAndTabs();
+
+    // Listeners do Ranking (BUG-005) e das sub-abas de Sala de Troféus/Ranking
+    const btnRankGlobal = document.getElementById('btn-ranking-global');
+    const btnRankFriends = document.getElementById('btn-ranking-friends');
+    if (btnRankGlobal) btnRankGlobal.addEventListener('click', () => { if (typeof window.switchRankingMode === 'function') window.switchRankingMode('global'); });
+    if (btnRankFriends) btnRankFriends.addEventListener('click', () => { if (typeof window.switchRankingMode === 'function') window.switchRankingMode('friends'); });
+
+    const btnSubtabTrophies = document.getElementById('subtab-btn-trophies');
+    const btnSubtabTrophiesRanking = document.getElementById('subtab-btn-trophies-ranking');
+    if (btnSubtabTrophies) btnSubtabTrophies.addEventListener('click', () => { if (typeof window.switchTrophiesTab === 'function') window.switchTrophiesTab('trophies'); });
+    if (btnSubtabTrophiesRanking) btnSubtabTrophiesRanking.addEventListener('click', () => { if (typeof window.switchTrophiesTab === 'function') window.switchTrophiesTab('ranking'); });
+
+    // Listeners da Taverna (BUG-005)
+    const btnTavernaShop = document.getElementById('subtab-btn-shop');
+    const btnTavernaInventory = document.getElementById('subtab-btn-inventory');
+    if (btnTavernaShop) btnTavernaShop.addEventListener('click', () => { if (typeof window.switchTavernaTab === 'function') window.switchTavernaTab('shop'); });
+    if (btnTavernaInventory) btnTavernaInventory.addEventListener('click', () => { if (typeof window.switchTavernaTab === 'function') window.switchTavernaTab('inventory'); });
 
     // Garante o primeiro draw do radar chart após DOM+fontes carregarem
     setTimeout(() => { drawRadarChart(); }, 150);

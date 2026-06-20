@@ -506,7 +506,7 @@ function setupRealtimeChat() {
     if (chatChannel) return;
 
     chatChannel = supabaseClient
-        .channel('public:chat_messages')
+        .channel('global-chat')
         .on(
             'postgres_changes',
             {
@@ -527,7 +527,9 @@ function setupRealtimeChat() {
                 }
             }
         )
-        .subscribe();
+        .subscribe((status) => {
+            console.log('[Realtime Chat Status]', status);
+        });
 }
 
 function appendMessageUI(msg) {

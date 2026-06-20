@@ -396,7 +396,6 @@
                     <button class="sub-tab-btn active" data-subtab="chat">CHAT GLOBAL</button>
                     <button class="sub-tab-btn" data-subtab="friends">AMIGOS <span id="pending-requests-badge" class="badge-pending" style="display:none;">0</span></button>
                     <button class="sub-tab-btn" data-subtab="duels">DUELOS</button>
-                    <button class="sub-tab-btn" data-subtab="ranking">RANKING</button>
                     <button class="sub-tab-btn" data-subtab="clan-details">CLÃ</button>
                 </div>
 
@@ -469,23 +468,6 @@
                         </div>
                     </div>
 
-                    <!-- SUB-ABA 3: RANKING GLOBAL -->
-                    <div id="subtab-ranking" class="sub-tab-content" style="display:none; flex: 1; overflow-y: auto;">
-                        <div class="community-card" style="padding: 16px 20px;">
-                            <div class="online-header" style="margin-bottom: 15px; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
-                                <span class="font-hud online-title" style="color: var(--neon-gold); font-size: 11px; letter-spacing: 1.5px;">👑 CLASSIFICAÇÃO DO SISTEMA</span>
-                            </div>
-                            <!-- Alternância de Ranking: Global vs Amigos -->
-                            <div class="ranking-mode-tabs" style="display: flex; gap: 8px; margin-bottom: 15px;">
-                                <button id="btn-ranking-global" class="sub-tab-btn active" onclick="switchRankingMode('global')" style="flex: 1; padding: 8px; font-size: 0.75rem; justify-content: center; height: 32px;">GLOBAL</button>
-                                <button id="btn-ranking-friends" class="sub-tab-btn" onclick="switchRankingMode('friends')" style="flex: 1; padding: 8px; font-size: 0.75rem; justify-content: center; height: 32px;">AMIGOS</button>
-                            </div>
-                            <div id="ranking-list-container" class="friends-list-v" style="display: flex; flex-direction: column; gap: 8px;">
-                                <div class="friends-empty-state">Carregando classificação do Sistema...</div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- SUB-ABA 3: CLÃ -->
                     <div id="subtab-clan-details" class="sub-tab-content" style="display:none; flex: 1; overflow-y: auto;">
                         <div class="community-card" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:220px; gap:16px; text-align:center; padding:30px 24px;">
@@ -545,8 +527,8 @@
 
                     <!-- SUB-ABAS TAVERNA -->
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <button class="tab-link active" id="subtab-btn-shop" onclick="switchTavernaTab('shop')" style="flex: 1; justify-content: center;">LOJA</button>
-                        <button class="tab-link" id="subtab-btn-inventory" onclick="switchTavernaTab('inventory')" style="flex: 1; justify-content: center;">INVENTÁRIO</button>
+                        <button class="tab-link active" id="subtab-btn-shop" style="flex: 1; justify-content: center;">LOJA</button>
+                        <button class="tab-link" id="subtab-btn-inventory" style="flex: 1; justify-content: center;">INVENTÁRIO</button>
                     </div>
 
                     <!-- MODO LOJA -->
@@ -746,12 +728,39 @@
                     <div class="content-header">
                         <div>
                             <h2>SALA DE TROFÉUS</h2>
-                            <p style="color: var(--text-muted); font-size: 0.7rem; margin-top: 4px; font-family: var(--font-body);">💡 Seus feitos heroicos e conquistas especiais são registrados aqui.</p>
+                            <p style="color: var(--text-muted); font-size: 0.7rem; margin-top: 4px; font-family: var(--font-body);">💡 Seus feitos heroicos, conquistas especiais e ranking são registrados aqui.</p>
                         </div>
-                        <span class="diff-badge" style="background:rgba(251,191,36,0.15); color:#fbbf24; border-color:rgba(251,191,36,0.4);">CONQUISTAS</span>
+                        <span class="diff-badge" style="background:rgba(251,191,36,0.15); color:#fbbf24; border-color:rgba(251,191,36,0.4);">SISTEMA</span>
                     </div>
-                    <div class="achievements-grid" id="achievements-container">
-                        <!-- Renderizado via JS -->
+
+                    <!-- Sub-abas de Troféus/Ranking -->
+                    <div class="trophies-sub-tabs" style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
+                        <button class="tab-link active" id="subtab-btn-trophies" style="flex: 1; justify-content: center; font-family: var(--font-hud); font-size: 0.75rem; letter-spacing: 1px;">SALA DE TROFÉUS</button>
+                        <button class="tab-link" id="subtab-btn-trophies-ranking" style="flex: 1; justify-content: center; font-family: var(--font-hud); font-size: 0.75rem; letter-spacing: 1px;">RANKING DO SISTEMA</button>
+                    </div>
+
+                    <!-- Painel 1: Conquistas -->
+                    <div id="panel-trophies" class="trophies-panel active">
+                        <div class="achievements-grid" id="achievements-container">
+                            <!-- Renderizado via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Painel 2: Ranking (movido do social) -->
+                    <div id="panel-ranking" class="trophies-panel" style="display: none;">
+                        <div class="community-card" style="padding: 16px 20px; background: transparent; border: none; box-shadow: none;">
+                            <div class="online-header" style="margin-bottom: 15px; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
+                                <span class="font-hud online-title" style="color: var(--neon-gold); font-size: 11px; letter-spacing: 1.5px;">👑 CLASSIFICAÇÃO DO SISTEMA</span>
+                            </div>
+                            <!-- Alternância de Ranking: Global vs Amigos -->
+                            <div class="ranking-mode-tabs" style="display: flex; gap: 8px; margin-bottom: 15px;">
+                                <button id="btn-ranking-global" class="sub-tab-btn active" style="flex: 1; padding: 8px; font-size: 0.75rem; justify-content: center; height: 32px;">GLOBAL</button>
+                                <button id="btn-ranking-friends" class="sub-tab-btn" style="flex: 1; padding: 8px; font-size: 0.75rem; justify-content: center; height: 32px;">AMIGOS</button>
+                            </div>
+                            <div id="ranking-list-container" class="friends-list-v" style="display: flex; flex-direction: column; gap: 8px;">
+                                <div class="friends-empty-state">Carregando classificação do Sistema...</div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
