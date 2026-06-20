@@ -832,6 +832,32 @@
                             <input type="text" id="sq-title" placeholder="Ex: Organizar documentação" required>
                         </div>
                         <div class="form-field">
+                            <label>TIPO DE MISSÃO</label>
+                            <div class="quest-type-selector" style="display:flex; gap:15px; margin-top:5px;">
+                                <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; font-family:var(--font-hud);">
+                                    <input type="radio" name="sq-type" value="daily" checked style="accent-color:var(--neon-purple);"> DIÁRIA
+                                </label>
+                                <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; font-family:var(--font-hud);">
+                                    <input type="radio" name="sq-type" value="weekly" style="accent-color:var(--neon-purple);"> SEMANAL
+                                </label>
+                                <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; font-family:var(--font-hud);">
+                                    <input type="radio" name="sq-type" value="side" style="accent-color:var(--neon-purple);"> AVULSA
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-field" id="weekly-day-selector" style="display:none;">
+                            <label>DIAS ATIVOS</label>
+                            <div style="display:flex; gap:6px; margin-top:5px; flex-wrap:wrap;">
+                                <button type="button" class="weekday-btn" data-day="1">SEG</button>
+                                <button type="button" class="weekday-btn" data-day="2">TER</button>
+                                <button type="button" class="weekday-btn" data-day="3">QUA</button>
+                                <button type="button" class="weekday-btn" data-day="4">QUI</button>
+                                <button type="button" class="weekday-btn" data-day="5">SEX</button>
+                                <button type="button" class="weekday-btn" data-day="6">SÁB</button>
+                                <button type="button" class="weekday-btn" data-day="0">DOM</button>
+                            </div>
+                        </div>
+                        <div class="form-field">
                             <label for="sq-icon">ÍCONE / EMOJI</label>
                             <select id="sq-icon">
                                 <option value="⚔️">⚔️ Combate / Geral</option>
@@ -865,14 +891,28 @@
                 <span class="close-modal-btn" id="close-confirm-modal">&times;</span>
                 <h4 id="confirm-habit-title" style="font-family:var(--font-hud); color:var(--text-primary); font-size:15px; margin-bottom:8px; margin-top:10px;">Adicionar Hábito?</h4>
                 <p id="confirm-habit-desc" style="font-size:12px; color:var(--text-muted); margin-bottom:20px; line-height:1.4;"></p>
-                <div style="display:flex; gap:10px; margin-top:8px; width:100%;">
-                    <button type="button" id="btn-habit-confirm-daily" class="btn-submit" style="flex:1;">
-                        📅 MISSÃO DIÁRIA
-                    </button>
+                <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px; width:100%;">
+                    <div style="display:flex; gap:8px; width:100%;">
+                        <button type="button" id="btn-habit-confirm-daily" class="btn-submit" style="flex:1;">
+                            📅 DIÁRIA
+                        </button>
+                        <button type="button" id="btn-habit-confirm-weekly" class="btn-submit" style="flex:1; background:linear-gradient(90deg,#3b82f6,#60a5fa); color:#000;">
+                            📅 SEMANAL
+                        </button>
+                    </div>
                     <button type="button" id="btn-habit-confirm-side" class="btn-submit" 
-                            style="flex:1; background:linear-gradient(90deg,var(--neon-purple),#a78bfa); box-shadow:0 0 20px var(--glow-purple); color:#000;">
+                            style="width:100%; background:linear-gradient(90deg,var(--neon-purple),#a78bfa); box-shadow:0 0 20px var(--glow-purple); color:#000;">
                         ⚡ SIDE QUEST
                     </button>
+                </div>
+                <div id="confirm-habit-weekly-day" style="display:none; gap:5px; margin-top:10px; flex-wrap:wrap; justify-content:center; width:100%;">
+                    <button type="button" class="weekday-btn" data-day="1">SEG</button>
+                    <button type="button" class="weekday-btn" data-day="2">TER</button>
+                    <button type="button" class="weekday-btn" data-day="3">QUA</button>
+                    <button type="button" class="weekday-btn" data-day="4">QUI</button>
+                    <button type="button" class="weekday-btn" data-day="5">SEX</button>
+                    <button type="button" class="weekday-btn" data-day="6">SÁB</button>
+                    <button type="button" class="weekday-btn" data-day="0">DOM</button>
                 </div>
                 <p style="font-size:10px; color:var(--text-muted); text-align:center; margin-top:8px; font-family:var(--font-hud); letter-spacing:0.5px;">
                     DIÁRIA = repete todo dia · SIDE QUEST = missão pontual

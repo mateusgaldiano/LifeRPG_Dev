@@ -3,7 +3,7 @@ import { gameState, saveGameData } from './state.js';
 import {
     localDateStr, getRankForLevel, debounce, hasPerk, calcStreakMultiplier,
     calcStreakGoldMultiplier, calcGroupMultiplier, getSynergyXpBonus,
-    getSynergyGoldBonus, getPerkXpBonus, initSkillsState
+    getSynergyGoldBonus, getPerkXpBonus, initSkillsState, isQuestActiveOnDay
 } from './utils.js';
 import { toggleQuest, adjustWater, buyStoreItem, completeDungeon, showQuestCleared } from './game-logic.js';
 import { setupSettingsListeners } from './pwa.js';
@@ -920,8 +920,12 @@ function updateUI() {
     }
 
     // Progresso diário
-    const totalDailies = gameState.quests.length;
-    const completedDailies = gameState.quests.filter(q => q.completed).length;
+    const todayDayOfWeek = new Date().getDay();
+    const activeToday = (gameState.quests || []).filter(q =>
+        isQuestActiveOnDay(q, todayDayOfWeek)
+    );
+    const totalDailies = activeToday.length;
+    const completedDailies = activeToday.filter(q => q.completed).length;
     const lblDailyProg = document.getElementById('lbl-daily-progress');
     if (lblDailyProg) lblDailyProg.innerText = `${completedDailies}/${totalDailies}`;
 
@@ -1143,7 +1147,11 @@ function renderQuests() {
 
     // Daily Quests
     if (gameState.quests) {
-        gameState.quests.forEach(quest => {
+        const todayDayOfWeek = new Date().getDay();
+        const activeToday = gameState.quests.filter(q =>
+            isQuestActiveOnDay(q, todayDayOfWeek)
+        );
+        activeToday.forEach(quest => {
             const card = document.createElement('div');
             card.className = `quest-card ${quest.completed ? 'completed' : ''}`;
             card.setAttribute('data-skill', quest.skill || 'routine');
@@ -1384,7 +1392,16 @@ function setupEventListeners() {
     const modalSq  = document.getElementById('modal-sidequest');
     const modalAv  = document.getElementById('modal-avatar-zoom');
 
-    document.getElementById('btn-add-sidequest')?.addEventListener('click', () => { if (modalSq) modalSq.style.display = 'flex'; });
+    document.getElementById('btn-add-sidequest')?.addEventListener('click', () => {
+        if (modalSq) modalSq.style.display = 'flex';
+        const form = document.getElementById('form-sidequest');
+        if (form) {
+            form.reset();
+            const weeklySelector = document.getElementById('weekly-day-selector');
+            if (weeklySelector) weeklySelector.style.display = 'none';
+            document.querySelectorAll('#weekly-day-selector .weekday-btn').forEach(btn => btn.classList.remove('active'));
+        }
+    });
     document.getElementById('close-sq-modal')?.addEventListener('click', () => { if (modalSq) modalSq.style.display = 'none'; });
 
     const modalRw = document.getElementById('modal-reward');
@@ -1400,23 +1417,89 @@ function setupEventListeners() {
         if (modalWr && e.target === modalWr) modalWr.style.display = 'none';
     });
 
+    // Form: Side Quest Toggle display for weekly selector
+    const typeRadios = document.querySelectorAll('input[name="sq-type"]');
+    const weeklySelector = document.getElementById('weekly-day-selector');
+    typeRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.value === 'weekly') {
+                if (weeklySelector) weeklySelector.style.display = 'block';
+            } else {
+                if (weeklySelector) weeklySelector.style.display = 'none';
+            }
+        });
+    });
+
+    // Toggle button active classes for weekday buttons
+    const dayButtons = document.querySelectorAll('#weekly-day-selector .weekday-btn');
+    dayButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            btn.classList.toggle('active');
+        });
+    });
+
     // Form: Side Quest
     document.getElementById('form-sidequest')?.addEventListener('submit', (e) => {
         e.preventDefault();
         const title = document.getElementById('sq-title').value;
         const icon = document.getElementById('sq-icon').value || '⚔️';
         const difficulty = document.getElementById('sq-difficulty').value;
+        const type = document.querySelector('input[name="sq-type"]:checked').value;
+        
         let xp = 25, gold = 15;
         if (difficulty === 'easy') { xp = 10; gold = 5; }
         else if (difficulty === 'hard') { xp = 50; gold = 30; }
-        gameState.sideQuests.push({ id: 'sq-' + Date.now(), title, type: 'side', icon, difficulty, completed: false, xp, gold });
+
+        if (type === 'side') {
+            gameState.sideQuests.push({ id: 'sq-' + Date.now(), title, type: 'side', icon, difficulty, completed: false, xp, gold });
+        } else if (type === 'weekly') {
+            const activeButtons = document.querySelectorAll('#weekly-day-selector .weekday-btn.active');
+            if (activeButtons.length === 0) {
+                alert('Selecione pelo menos um dia da semana!');
+                return;
+            }
+            const daysOfWeek = Array.from(activeButtons).map(btn => parseInt(btn.getAttribute('data-day')));
+            gameState.quests.push({
+                id: 'q-custom-' + Date.now(),
+                title,
+                type: 'weekly',
+                daysOfWeek,
+                icon,
+                difficulty,
+                completed: false,
+                xp,
+                gold,
+                current: icon === '💧' ? 0 : undefined,
+                target: icon === '💧' ? 8 : undefined
+            });
+        } else {
+            // daily
+            gameState.quests.push({
+                id: 'q-custom-' + Date.now(),
+                title,
+                type: 'daily',
+                icon,
+                difficulty,
+                completed: false,
+                xp,
+                gold,
+                current: icon === '💧' ? 0 : undefined,
+                target: icon === '💧' ? 8 : undefined
+            });
+        }
+
         saveGameData(); 
         renderQuests();
+        updateUI();
         if (typeof checkAndProgressTutorialStep1 === 'function') {
             checkAndProgressTutorialStep1();
         }
         modalSq.style.display = 'none';
+        
         document.getElementById('form-sidequest').reset();
+        document.querySelectorAll('#weekly-day-selector .weekday-btn').forEach(btn => btn.classList.remove('active'));
+        if (weeklySelector) weeklySelector.style.display = 'none';
     });
 
     // Form: Recompensa

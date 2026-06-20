@@ -41,7 +41,8 @@ import {
     hasPerk,
     getPerkXpBonus,
     debounce,
-    getPlayerTerm
+    getPlayerTerm,
+    isQuestActiveOnDay
 } from './modules/utils.js';
 
 import {
@@ -183,6 +184,7 @@ window.hasPerk = hasPerk;
 window.getPerkXpBonus = getPerkXpBonus;
 window.debounce = debounce;
 window.getPlayerTerm = () => getPlayerTerm(gameState.gender);
+window.isQuestActiveOnDay = isQuestActiveOnDay;
 
 // Bind UI
 window.renderAchievements = renderAchievements;

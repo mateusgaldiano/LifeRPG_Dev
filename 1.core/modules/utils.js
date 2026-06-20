@@ -285,6 +285,20 @@ function getPlayerTerm(gender = 'male') {
     return gender === 'female' ? 'Guerreira' : 'Guerreiro';
 }
 
+function isQuestActiveOnDay(quest, dayOfWeek = new Date().getDay()) {
+    const type = quest.type || 'daily';
+    if (type === 'daily') return true;
+    if (type === 'side') return false;
+    if (type === 'weekly') {
+        return (quest.daysOfWeek || []).includes(dayOfWeek);
+    }
+    if (typeof type === 'string' && type.startsWith('weekly-')) {
+        const days = type.split('-').slice(1).map(Number);
+        return days.includes(dayOfWeek);
+    }
+    return false;
+}
+
 async function trackEvent(eventName, properties = {}) {
     console.log(`[Analytics] Track Event: ${eventName}`, properties);
     if (typeof supabaseClient === 'undefined') {
@@ -334,5 +348,6 @@ export {
     hasPerk,
     getPerkXpBonus,
     debounce,
-    getPlayerTerm
+    getPlayerTerm,
+    isQuestActiveOnDay
 };

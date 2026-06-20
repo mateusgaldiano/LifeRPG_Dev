@@ -444,27 +444,33 @@ async function syncQuestsToSupabase() {
   if (!window._currentUserDbId) return;
 
   const allQuests = [
-    ...(gameState.quests || []).map(q => ({ ...q, type: 'daily' })),
-    ...(gameState.sideQuests || []).map(q => ({ ...q, type: 'side' })),
+    ...(gameState.quests || []).map(q => ({ ...q, type: q.type || 'daily' })),
+    ...(gameState.sideQuests || []).map(q => ({ ...q, type: q.type || 'side' })),
   ];
 
-  const rows = allQuests.map(q => ({
-    user_id: window._currentUserDbId,
-    local_id: q.id,
-    title: q.title,
-    skill: q.skill,
-    type: q.type,
-    difficulty: q.difficulty || 'medium',
-    xp: q.xp,
-    gold: q.gold,
-    emoji: q.emoji || q.icon,
-    completed: !!q.completed,
-    completed_at: q.completed ? new Date().toISOString() : null,
-    from_library: !!q.fromLibrary,
-    recurring: q.type === 'daily',
-    current: q.current ?? null,
-    target: q.target ?? null,
-  }));
+  const rows = allQuests.map(q => {
+    let serializedType = q.type;
+    if (q.type === 'weekly') {
+      serializedType = `weekly-${(q.daysOfWeek || []).join('-')}`;
+    }
+    return {
+      user_id: window._currentUserDbId,
+      local_id: q.id,
+      title: q.title,
+      skill: q.skill,
+      type: serializedType,
+      difficulty: q.difficulty || 'medium',
+      xp: q.xp,
+      gold: q.gold,
+      emoji: q.emoji || q.icon,
+      completed: !!q.completed,
+      completed_at: q.completed ? new Date().toISOString() : null,
+      from_library: !!q.fromLibrary,
+      recurring: q.type === 'daily' || q.type === 'weekly',
+      current: q.current ?? null,
+      target: q.target ?? null,
+    };
+  });
 
   if (rows.length === 0) return;
 
@@ -486,22 +492,31 @@ window.loadQuestsFromSupabase = async function() {
   if (error || !data) return;
 
   gameState.quests = data
-    .filter(q => q.type === 'daily')
-    .map(q => ({
-      id: q.local_id,
-      title: q.title,
-      skill: q.skill,
-      type: 'daily',
-      difficulty: q.difficulty,
-      xp: q.xp,
-      gold: q.gold,
-      emoji: q.emoji,
-      icon: q.emoji,
-      completed: q.completed,
-      fromLibrary: q.from_library,
-      current: q.current,
-      target: q.target,
-    }));
+    .filter(q => q.type === 'daily' || (typeof q.type === 'string' && q.type.startsWith('weekly-')))
+    .map(q => {
+      let questType = q.type;
+      let daysOfWeek = [];
+      if (typeof q.type === 'string' && q.type.startsWith('weekly-')) {
+        questType = 'weekly';
+        daysOfWeek = q.type.split('-').slice(1).map(Number);
+      }
+      return {
+        id: q.local_id,
+        title: q.title,
+        skill: q.skill,
+        type: questType,
+        daysOfWeek: daysOfWeek,
+        difficulty: q.difficulty,
+        xp: q.xp,
+        gold: q.gold,
+        emoji: q.emoji,
+        icon: q.emoji,
+        completed: q.completed,
+        fromLibrary: q.from_library,
+        current: q.current,
+        target: q.target,
+      };
+    });
 
   gameState.sideQuests = data
     .filter(q => q.type === 'side')

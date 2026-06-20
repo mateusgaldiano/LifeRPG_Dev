@@ -4,7 +4,7 @@ import {
     trackEvent, localDateStr, getRankForLevel, getXpToNextForLevel, hasPerk,
     calcStreakMultiplier, calcStreakGoldMultiplier, calcGroupMultiplier,
     getSynergySkillXpBonus, getSynergyXpBonus, getSynergyGoldBonus, getPerkXpBonus, initSkillsState,
-    getPlayerTerm
+    getPlayerTerm, isQuestActiveOnDay
 } from './utils.js';
 import {
     showSystemToast, spawnFloatingText, animateGoldGain, triggerLevelUpOverlay,
@@ -712,7 +712,11 @@ function deductRewards(xpLost, goldLost) {
 
 
 function checkAllDailies() {
-    const allDone = gameState.quests.every(q => q.completed);
+    const todayDayOfWeek = new Date().getDay();
+    const activeToday = (gameState.quests || []).filter(q =>
+        isQuestActiveOnDay(q, todayDayOfWeek)
+    );
+    const allDone = activeToday.length > 0 && activeToday.every(q => q.completed);
     if (allDone) {
         gameState.streak++;
 
@@ -789,7 +793,7 @@ function showQuestCleared(quest) {
     setTimeout(() => overlay.classList.remove('show'), 1800);
 }
 
-function applyDailyPenalty() {
+function applyDailyPenalty(yesterdayStr) {
     // ── 1. Verifica Poção de Cura (Prioridade Máxima) ────────────────────────
     if (gameState.buffs && gameState.buffs.autoHeal) {
         gameState.buffs.autoHeal = false;
@@ -867,9 +871,16 @@ function applyDailyPenalty() {
     //  Aplica penalidade nas skills (-1 XP nas skills com falhas comuns) 
     if (skillPenalty && gameState.skills) {
         // Penaliza skills ligadas a quests não concluídas
+        let yesterdayDay;
+        if (yesterdayStr) {
+            const parts = yesterdayStr.split('-').map(Number);
+            yesterdayDay = new Date(parts[0], parts[1] - 1, parts[2]).getDay();
+        } else {
+            yesterdayDay = new Date(Date.now() - 86400000).getDay();
+        }
         const failedSkills = new Set();
         (gameState.quests || []).forEach(q => {
-            if (!q.completed && q.skill) failedSkills.add(q.skill);
+            if (isQuestActiveOnDay(q, yesterdayDay) && !q.completed && q.skill) failedSkills.add(q.skill);
         });
         const skillToMainAttr = {
             mental: 'willpower', routine: 'willpower',

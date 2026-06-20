@@ -1,5 +1,5 @@
 // state.js
-import { localDateStr, getXpToNextForLevel, hasSkillLV3, initSkillsState } from './utils.js';
+import { localDateStr, getXpToNextForLevel, hasSkillLV3, initSkillsState, isQuestActiveOnDay } from './utils.js';
 import { syncQuestsByLevel, checkDungeonExpiry, checkWeeklyBossExpiry, spawnDungeon, checkAchievements, saveToCloud } from './game-logic.js';
 
 /* ==========================================================================
@@ -46,7 +46,7 @@ const HABIT_LIBRARY = [
     { id: 'lib-deepwork', title: 'Deep Work (Foco total por 45 min)', icon: '💻', difficulty: 'medium', skill: 'productivity' },
     { id: 'lib-organizar', title: 'Organizar mesa de trabalho / Quarto', icon: '🧹', difficulty: 'easy', skill: 'productivity' },
     { id: 'lib-planejar', title: 'Planejar tarefas do dia seguinte', icon: '📅', difficulty: 'easy', skill: 'productivity' },
-    { id: 'lib-revisar', title: 'Revisar objetivos semanais', icon: '🎯', difficulty: 'easy', skill: 'productivity' },
+    { id: 'lib-revisar', title: 'Revisar objetivos semanais', icon: '🎯', difficulty: 'easy', skill: 'productivity', type: 'weekly', defaultDaysOfWeek: [0] },
     { id: 'lib-estudar-ferramenta', title: 'Estudar nova ferramenta (30 min)', icon: '🌐', difficulty: 'medium', skill: 'productivity' },
 
     // Saber / Sabedoria (Wisdom)
@@ -62,6 +62,7 @@ const HABIT_LIBRARY = [
     { id: 'lib-dormir-cedo', title: 'Dormir antes das 23h', icon: '💤', difficulty: 'medium', skill: 'routine' },
     { id: 'lib-skincare', title: 'Skincare matinal / noturno', icon: '🧴', difficulty: 'easy', skill: 'routine' },
     { id: 'lib-preparar-dia', title: 'Preparar roupas para amanhã', icon: '💼', difficulty: 'easy', skill: 'routine' },
+    { id: 'lib-meal-prep', title: 'Meal Prep Semanal', icon: '🥦', difficulty: 'medium', skill: 'routine', type: 'weekly', defaultDaysOfWeek: [0] },
 
     // Social (Social)
     { id: 'lib-familia-msg', title: 'Mensagem carinhosa para família', icon: '❤️', difficulty: 'easy', skill: 'social' },
@@ -482,12 +483,20 @@ function loadGameData() {
         // Verifica reset diário
         const todayStr = localDateStr();
         if (parsed.lastCheckedDate && parsed.lastCheckedDate !== todayStr) {
-            const completedCount = (parsed.quests || []).filter(q => q.completed).length;
-            const totalCount = (parsed.quests || []).length;
-            const allWereDone = completedCount >= totalCount && totalCount > 0;
+            const parts = parsed.lastCheckedDate.split('-').map(Number);
+            const oldDateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+            const yesterdayDayOfWeek = oldDateObj.getDay();
+
+            const activeYesterday = (parsed.quests || []).filter(q =>
+                isQuestActiveOnDay(q, yesterdayDayOfWeek)
+            );
+
+            const completedCount = activeYesterday.filter(q => q.completed).length;
+            const totalCount = activeYesterday.length;
+            const allWereDone = totalCount > 0 ? (completedCount >= totalCount) : true;
             
             // Grava o Histórico do dia anterior
-            let dailyStatus = 'missed';
+            let dailyStatus = 'skipped';
             if (totalCount > 0) {
                 const pct = completedCount / totalCount;
                 if (completedCount === 0) dailyStatus = 'missed';
@@ -497,8 +506,7 @@ function loadGameData() {
             }
 
             // Identifica se era um dia ativo (para evitar punir dias de descanso)
-            const oldDateObj = new Date(parsed.lastCheckedDate);
-            const isRestDay = parsed.activeDays && !parsed.activeDays.includes(oldDateObj.getDay());
+            const isRestDay = parsed.activeDays && !parsed.activeDays.includes(yesterdayDayOfWeek);
             if (isRestDay && dailyStatus === 'missed') {
                 dailyStatus = 'skipped';
             }
@@ -507,18 +515,33 @@ function loadGameData() {
                 status: dailyStatus,
                 count: completedCount,
                 total: totalCount,
-                completedIds: (parsed.quests || []).filter(q => q.completed).map(q => q.title) // salva nomes
+                completedIds: activeYesterday.filter(q => q.completed).map(q => q.title) // salva nomes
             };
 
             // Verifica penalidade
-            if (!allWereDone && (parsed.streak || 0) > 0 && !isRestDay) {
+            if (totalCount > 0 && !allWereDone && (parsed.streak || 0) > 0 && !isRestDay) {
                 // Penalidade adiada para depois do DOM estar pronto
-                setTimeout(() => applyDailyPenalty(), 2000);
+                const yesterdayStr = parsed.lastCheckedDate;
+                setTimeout(() => window.applyDailyPenalty(yesterdayStr), 2000);
             }
             // Reseta hábitos diários para um novo dia
             parsed.quests.forEach(q => {
-                q.completed = false;
-                if (q.current !== undefined) q.current = 0;
+                const type = q.type || 'daily';
+                if (type === 'daily') {
+                    q.completed = false;
+                    if (q.current !== undefined) q.current = 0;
+                } else if (type === 'weekly') {
+                    if ((q.daysOfWeek || []).includes(yesterdayDayOfWeek)) {
+                        q.completed = false;
+                        if (q.current !== undefined) q.current = 0;
+                    }
+                } else if (typeof type === 'string' && type.startsWith('weekly-')) {
+                    const days = type.split('-').slice(1).map(Number);
+                    if (days.includes(yesterdayDayOfWeek)) {
+                        q.completed = false;
+                        if (q.current !== undefined) q.current = 0;
+                    }
+                }
             });
             // Limpa as side quests concluídas
             if (parsed.sideQuests) {
@@ -592,7 +615,11 @@ function loadGameData() {
 
 function updateSWQuestStatus() {
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        const pendingCount = (gameState.quests || []).filter(q => !q.completed).length;
+        const todayDayOfWeek = new Date().getDay();
+        const activeToday = (gameState.quests || []).filter(q =>
+            isQuestActiveOnDay(q, todayDayOfWeek)
+        );
+        const pendingCount = activeToday.filter(q => !q.completed).length;
         navigator.serviceWorker.controller.postMessage({
             type: 'UPDATE_QUEST_STATUS',
             pendingCount: pendingCount

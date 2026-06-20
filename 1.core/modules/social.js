@@ -75,9 +75,16 @@ function setupHabitLibraryAndTabs() {
     const cancelConfirm = document.getElementById('btn-cancel-add-habit');
     const confirmDailyBtn = document.getElementById('btn-habit-confirm-daily');
     const confirmSideBtn = document.getElementById('btn-habit-confirm-side');
+    const confirmWeeklyBtn = document.getElementById('btn-habit-confirm-weekly');
+    const confirmWeeklySelector = document.getElementById('confirm-habit-weekly-day');
 
     const hideConfirm = () => {
         if (modalConfirm) modalConfirm.style.display = 'none';
+        if (confirmDailyBtn) confirmDailyBtn.style.display = '';
+        if (confirmSideBtn) confirmSideBtn.style.display = '';
+        if (confirmWeeklySelector) confirmWeeklySelector.style.display = 'none';
+        if (confirmWeeklyBtn) confirmWeeklyBtn.innerText = '📅 SEMANAL';
+        confirmWeeklySelector?.querySelectorAll('.weekday-btn').forEach(b => b.classList.remove('active'));
     };
 
     closeConfirm?.addEventListener('click', hideConfirm);
@@ -95,9 +102,36 @@ function setupHabitLibraryAndTabs() {
         if (!selectedLibraryHabit) return;
         addHabitFromLibrary(selectedLibraryHabit, 'side');
     });
+
+    confirmWeeklyBtn?.addEventListener('click', () => {
+        if (!selectedLibraryHabit) return;
+        if (confirmWeeklySelector && confirmWeeklySelector.style.display === 'none') {
+            confirmWeeklySelector.style.display = 'flex';
+            if (confirmDailyBtn) confirmDailyBtn.style.display = 'none';
+            if (confirmSideBtn) confirmSideBtn.style.display = 'none';
+            confirmWeeklyBtn.innerText = '✓ CONFIRMAR';
+        } else {
+            const activeBtns = confirmWeeklySelector?.querySelectorAll('.weekday-btn.active');
+            if (!activeBtns || activeBtns.length === 0) {
+                alert('Selecione pelo menos um dia da semana!');
+                return;
+            }
+            const days = Array.from(activeBtns).map(b => parseInt(b.getAttribute('data-day')));
+            addHabitFromLibrary(selectedLibraryHabit, 'weekly', days);
+        }
+    });
+
+    // Toggle button active classes for weekday buttons in confirmation modal
+    const confirmDayButtons = document.querySelectorAll('#confirm-habit-weekly-day .weekday-btn');
+    confirmDayButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            btn.classList.toggle('active');
+        });
+    });
 }
 
-function addHabitFromLibrary(h, type = 'daily') {
+function addHabitFromLibrary(h, type = 'daily', daysOfWeek = []) {
     let xp = 25, gold = 15;
     if (h.difficulty === 'easy') { xp = 10; gold = 5; }
     else if (h.difficulty === 'hard') { xp = 50; gold = 30; }
@@ -108,7 +142,7 @@ function addHabitFromLibrary(h, type = 'daily') {
     const newQuest = {
         id:        prefix + Date.now(),
         title:     h.title,
-        type:      type,           // 'daily' ou 'side'
+        type:      type,           // 'daily', 'side' ou 'weekly'
         skill:     h.skill,
         difficulty: h.difficulty,
         xp:        xp,
@@ -119,12 +153,20 @@ function addHabitFromLibrary(h, type = 'daily') {
         fromLibrary: true
     };
 
-    if (type === 'daily') {
-        gameState.quests.push(newQuest);
-        showSystemToast(`📅 "${h.title}" adicionada às Missões Diárias!`);
-    } else {
+    if (type === 'weekly') {
+        newQuest.daysOfWeek = daysOfWeek;
+    }
+
+    if (type === 'side') {
         gameState.sideQuests.push(newQuest);
         showSystemToast(`⚡ "${h.title}" adicionada às Side Quests!`);
+    } else {
+        gameState.quests.push(newQuest);
+        if (type === 'weekly') {
+            showSystemToast(`📅 "${h.title}" adicionada às Missões Semanais!`);
+        } else {
+            showSystemToast(`📅 "${h.title}" adicionada às Missões Diárias!`);
+        }
     }
 
     saveGameData();
@@ -140,6 +182,17 @@ function addHabitFromLibrary(h, type = 'daily') {
     if (modalSq) modalSq.style.display = 'none';
 
     selectedLibraryHabit = null;
+    
+    // Restaurar estado dos botões
+    const confirmDailyBtn = document.getElementById('btn-habit-confirm-daily');
+    const confirmSideBtn = document.getElementById('btn-habit-confirm-side');
+    const confirmWeeklyBtn = document.getElementById('btn-habit-confirm-weekly');
+    const confirmWeeklySelector = document.getElementById('confirm-habit-weekly-day');
+    if (confirmDailyBtn) confirmDailyBtn.style.display = '';
+    if (confirmSideBtn) confirmSideBtn.style.display = '';
+    if (confirmWeeklySelector) confirmWeeklySelector.style.display = 'none';
+    if (confirmWeeklyBtn) confirmWeeklyBtn.innerText = '📅 SEMANAL';
+    confirmWeeklySelector?.querySelectorAll('.weekday-btn').forEach(b => b.classList.remove('active'));
 }
 
 function renderHabitLibrary(filter = 'all', search = '') {
@@ -211,6 +264,32 @@ function renderHabitLibrary(filter = 'all', search = '') {
                     else if (habit.difficulty === 'hard') { diffLabel = 'Difícil'; xp = 50; gold = 30; }
 
                     confirmDesc.innerHTML = 'Deseja adicionar o hábito <b>"' + habit.title + '"</b>?<br><br>Recompensas ao concluir: <b>+' + xp + ' XP</b> · <b>+' + gold + ' Ouro</b> · <b>+' + xp + ' Skill XP</b>';
+                    
+                    const confirmDailyBtn = document.getElementById('btn-habit-confirm-daily');
+                    const confirmSideBtn = document.getElementById('btn-habit-confirm-side');
+                    const confirmWeeklyBtn = document.getElementById('btn-habit-confirm-weekly');
+                    const confirmWeeklySelector = document.getElementById('confirm-habit-weekly-day');
+                    
+                    if (confirmDailyBtn) confirmDailyBtn.style.display = '';
+                    if (confirmSideBtn) confirmSideBtn.style.display = '';
+                    if (confirmWeeklySelector) confirmWeeklySelector.style.display = 'none';
+                    if (confirmWeeklyBtn) confirmWeeklyBtn.innerText = '📅 SEMANAL';
+                    confirmWeeklySelector?.querySelectorAll('.weekday-btn').forEach(b => b.classList.remove('active'));
+
+                    if (habit.type === 'weekly') {
+                        if (confirmWeeklySelector) {
+                            confirmWeeklySelector.style.display = 'flex';
+                            const defaultDays = habit.defaultDaysOfWeek || [0];
+                            confirmWeeklySelector.querySelectorAll('.weekday-btn').forEach(b => {
+                                const d = parseInt(b.getAttribute('data-day'));
+                                if (defaultDays.includes(d)) b.classList.add('active');
+                            });
+                        }
+                        if (confirmDailyBtn) confirmDailyBtn.style.display = 'none';
+                        if (confirmSideBtn) confirmSideBtn.style.display = 'none';
+                        if (confirmWeeklyBtn) confirmWeeklyBtn.innerText = '✓ CONFIRMAR';
+                    }
+
                     modalConfirm.style.display = 'flex';
                 }
             }
