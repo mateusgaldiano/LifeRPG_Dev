@@ -388,7 +388,9 @@ window.syncFromCloud = async function() {
   const cloudIsNewer =
     cloudUser.level > gameState.level ||
     (cloudUser.level === gameState.level && cloudUser.streak > gameState.streak) ||
-    (cloudUser.level === gameState.level && cloudUser.streak === gameState.streak &&
+    (cloudUser.level === gameState.level && cloudUser.streak === gameState.streak && cloudUser.xp > gameState.xp) ||
+    (cloudUser.level === gameState.level && cloudUser.streak === gameState.streak && cloudUser.xp === gameState.xp && cloudUser.gold > gameState.gold) ||
+    (cloudUser.level === gameState.level && cloudUser.streak === gameState.streak && cloudUser.xp === gameState.xp && cloudUser.gold === gameState.gold &&
       cloudUser.last_active_at && new Date(cloudUser.last_active_at) > new Date(gameState._lastSyncedAt || 0));
 
   if (cloudIsNewer) {
@@ -414,6 +416,13 @@ window.syncFromCloud = async function() {
 
     saveGameData(); // persiste no localStorage também
     updateUI();
+
+    // Re-renderiza todos os componentes de UI para refletir os dados carregados da nuvem imediatamente
+    if (typeof window.renderQuests === 'function') window.renderQuests();
+    if (typeof window.renderRewards === 'function') window.renderRewards();
+    if (typeof window.renderSkills === 'function') window.renderSkills();
+    if (typeof window.drawRadarChart === 'function') window.drawRadarChart();
+    if (typeof window.updateAvatarImage === 'function') window.updateAvatarImage();
   } else {
     // Local ganha — subir para a nuvem
     await saveToSupabase();
