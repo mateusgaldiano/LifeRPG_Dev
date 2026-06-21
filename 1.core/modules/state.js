@@ -8,22 +8,32 @@ import { syncQuestsByLevel, checkDungeonExpiry, checkWeeklyBossExpiry, spawnDung
 
 // Banco de dados mestre de hábitos por nível do LifeRPG
 const ALL_HABITS_DATABASE = [
-    // Bracket 1 (Nível 1 ao 4)
-    { id: 'q-db-acordar', baseId: 'q-acordar', title: 'Acordar Cedo (5 min)', type: 'daily', icon: '🌅', completed: false, xp: 15, gold: 8, duration: 5, minLevel: 1, skill: 'routine' },
-    { id: 'q-db-malhar', baseId: 'q-malhar', title: 'Treinar de Força / Corrida (45 min)', type: 'daily', icon: '🏋️‍♂️', completed: false, xp: 30, gold: 15, duration: 45, minLevel: 1, skill: 'physical' },
+    // Bracket 1: Fáceis (Nível 1 ao 4)
+    { id: 'q-db-acordar', baseId: 'q-acordar', title: 'Acordar Cedo (Horário Fixo) (5 min)', type: 'daily', icon: '🌅', completed: false, xp: 15, gold: 8, duration: 5, minLevel: 1, skill: 'routine' },
+    { id: 'q-db-cama', baseId: 'q-cama', title: 'Arrumei a cama ao levantar (2 min)', type: 'daily', icon: '🛏️', completed: false, xp: 10, gold: 5, duration: 2, minLevel: 1, skill: 'routine' },
+    { id: 'q-db-agua', baseId: 'q-agua', title: 'Beber 1 copo de água ao acordar (2 min)', type: 'daily', icon: '💧', completed: false, xp: 10, gold: 5, duration: 2, minLevel: 1, skill: 'physical' },
+    { id: 'q-db-meditar', baseId: 'q-meditar', title: 'Meditar por 3 minutos (3 min)', type: 'daily', icon: '🧘', completed: false, xp: 10, gold: 5, duration: 3, minLevel: 1, skill: 'mental' },
     { id: 'q-db-ler', baseId: 'q-ler', title: 'Leitura (15 min)', type: 'daily', icon: '📚', completed: false, xp: 20, gold: 10, duration: 15, minLevel: 1, skill: 'wisdom' },
-    { id: 'q-db-meditar', baseId: 'q-meditar', title: 'Meditar (10 min)', type: 'daily', icon: '🧘', completed: false, xp: 15, gold: 8, duration: 10, minLevel: 1, skill: 'mental' },
-    { id: 'q-db-agua', baseId: 'q-agua2', title: 'Beber Água (8 copos - 5 min)', type: 'daily', icon: '💧', completed: false, xp: 20, gold: 10, target: 8, current: 0, duration: 5, minLevel: 1, skill: 'physical' },
-    { id: 'q-db-familia', baseId: 'q-familia', title: 'Mandar mensagem/ligar para Família (5 min)', type: 'daily', icon: '❤️', completed: false, xp: 15, gold: 8, duration: 5, minLevel: 1, skill: 'social' },
+    { id: 'q-db-alongamento', baseId: 'q-alongamento', title: 'Alongamento / Mobilidade (10 min)', type: 'daily', icon: '🧘', completed: false, xp: 15, gold: 8, duration: 10, minLevel: 1, skill: 'physical' },
+    { id: 'q-db-familia', baseId: 'q-familia', title: 'Mensagem carinhosa para família (3 min)', type: 'daily', icon: '❤️', completed: false, xp: 10, gold: 5, duration: 3, minLevel: 1, skill: 'social' },
+    { id: 'q-db-planejar', baseId: 'q-planejar', title: 'Planejar tarefas do dia seguinte (10 min)', type: 'daily', icon: '📅', completed: false, xp: 15, gold: 8, duration: 10, minLevel: 1, skill: 'productivity' },
+    { id: 'q-db-checkin', baseId: 'q-checkin', title: 'Check-in Emocional no Diário (5 min)', type: 'daily', icon: '📝', completed: false, xp: 15, gold: 8, duration: 5, minLevel: 1, skill: 'mental' },
     
-    // Bracket 2 (Nível 5 ao 9)
+    // Bracket 2: Médios (Nível 5 ao 9)
+    { id: 'q-db-semcelular', baseId: 'q-semcelular', title: 'Sem celular ao acordar (30 min)', type: 'daily', icon: '🚫', completed: false, xp: 20, gold: 10, duration: 30, minLevel: 5, skill: 'routine' },
+    { id: 'q-db-meditacao', baseId: 'q-meditacao', title: 'Meditação Guiada (10 min)', type: 'daily', icon: '🧘', completed: false, xp: 20, gold: 10, duration: 10, minLevel: 5, skill: 'mental' },
+    { id: 'q-db-estudoshort', baseId: 'q-estudo', title: 'Assistir 1 aula/podcast educativo (20 min)', type: 'daily', icon: '🎧', completed: false, xp: 20, gold: 10, duration: 20, minLevel: 5, skill: 'wisdom' },
     { id: 'q-db-deepwork', baseId: 'q-estudo', title: '30 min em projeto pessoal', type: 'daily', icon: '💻', completed: false, xp: 25, gold: 12, duration: 30, minLevel: 5, skill: 'productivity' },
-    { id: 'q-db-estudo', baseId: 'q-estudo', title: 'Estudo Profissional (30 min)', type: 'daily', icon: '🧠', completed: false, xp: 25, gold: 12, duration: 30, minLevel: 5, skill: 'wisdom' },
-    { id: 'q-db-checkin', baseId: null, title: 'Check-in Emocional no Diário (5 min)', type: 'daily', icon: '📝', completed: false, xp: 15, gold: 8, duration: 5, minLevel: 5, skill: 'mental' },
+    { id: 'q-db-caminhada', baseId: 'q-caminhada', title: 'Caminhada ativa (30 min)', type: 'daily', icon: '🚶', completed: false, xp: 25, gold: 12, duration: 30, minLevel: 5, skill: 'physical' },
+    { id: 'q-db-ligar', baseId: 'q-ligar', title: 'Ligar para um amigo/familiar (15 min)', type: 'daily', icon: '📞', completed: false, xp: 20, gold: 10, duration: 15, minLevel: 5, skill: 'social' },
     
-    // Bracket 3 (Nível 10+)
-    { id: 'q-db-estoico', baseId: null, title: 'Leitura de Estoicismo (10 min)', type: 'daily', icon: '🏛️', completed: false, xp: 20, gold: 10, duration: 10, minLevel: 10, skill: 'mental' },
-    { id: 'q-db-producao', baseId: null, title: 'Produção: Criar 1 conteúdo autoral (20 min)', type: 'daily', icon: '✍️', completed: false, xp: 25, gold: 12, duration: 20, minLevel: 10, skill: 'productivity' }
+    // Bracket 3: Difíceis (Nível 10+)
+    { id: 'q-db-detox', baseId: 'q-detox', title: 'Rotina Noturna (15 min)', type: 'daily', icon: '📵', completed: false, xp: 25, gold: 12, duration: 15, minLevel: 10, skill: 'mental' },
+    { id: 'q-db-meditarprof', baseId: 'q-meditarprof', title: 'Meditação Silenciosa profunda (30 min)', type: 'daily', icon: '🧘', completed: false, xp: 30, gold: 15, duration: 30, minLevel: 10, skill: 'mental' },
+    { id: 'q-db-estudolong', baseId: 'q-estudolong', title: 'Estudo online com resumo ativo (45 min)', type: 'daily', icon: '🧠', completed: false, xp: 30, gold: 15, duration: 45, minLevel: 10, skill: 'wisdom' },
+    { id: 'q-db-focolong', baseId: 'q-focolong', title: 'Trabalho concentrado ininterrupto (60 min)', type: 'daily', icon: '💻', completed: false, xp: 40, gold: 20, duration: 60, minLevel: 10, skill: 'productivity' },
+    { id: 'q-db-malhar', baseId: 'q-malhar', title: 'Treinar de Força / Corrida (45 min)', type: 'daily', icon: '🏋️‍♂️', completed: false, xp: 30, gold: 15, duration: 45, minLevel: 10, skill: 'physical' },
+    { id: 'q-db-encontro', baseId: 'q-encontro', title: 'Encontro social presencial sem telas (60 min)', type: 'daily', icon: '👥', completed: false, xp: 40, gold: 20, duration: 60, minLevel: 10, skill: 'social' }
 ];
 
 // Biblioteca mestre de 30 hábitos curados para a aba Biblioteca do modal
