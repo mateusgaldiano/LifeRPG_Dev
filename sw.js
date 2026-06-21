@@ -37,6 +37,7 @@ const ASSETS_TO_CACHE = [
 
 // ── INSTALL: pre-cache all assets ────────────────────────────────────────────
 self.addEventListener('install', (event) => {
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             // Cache each asset individually to avoid one failure blocking all
@@ -47,7 +48,7 @@ self.addEventListener('install', (event) => {
                     })
                 )
             );
-        }).then(() => self.skipWaiting())
+        })
     );
 });
 
