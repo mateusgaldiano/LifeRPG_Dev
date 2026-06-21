@@ -20,7 +20,7 @@ CREATE TABLE persons (
 -- ─────────────────────────────────────────
 CREATE TABLE users (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  person_id      uuid REFERENCES persons(id) ON DELETE CASCADE,
+  person_id      uuid UNIQUE REFERENCES persons(id) ON DELETE CASCADE,
   username       text UNIQUE NOT NULL,
   level          int DEFAULT 1,
   xp             int DEFAULT 0,
