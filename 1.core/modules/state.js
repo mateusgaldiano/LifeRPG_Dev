@@ -17,7 +17,7 @@ const ALL_HABITS_DATABASE = [
     { id: 'q-db-familia', baseId: 'q-familia', title: 'Mandar mensagem/ligar para Família', type: 'daily', icon: '❤️', completed: false, xp: 15, gold: 8, minLevel: 1, skill: 'social' },
     
     // Bracket 2 (Nível 5 ao 9)
-    { id: 'q-db-deepwork', baseId: 'q-estudo', title: 'Deep Work: 30min no projeto pessoal', type: 'daily', icon: '💻', completed: false, xp: 25, gold: 12, minLevel: 5, skill: 'productivity' },
+    { id: 'q-db-deepwork', baseId: 'q-estudo', title: '30 min em projeto pessoal', type: 'daily', icon: '💻', completed: false, xp: 25, gold: 12, minLevel: 5, skill: 'productivity' },
     { id: 'q-db-estudo', baseId: 'q-estudo', title: 'Estudo: 30min na área profissional', type: 'daily', icon: '🧠', completed: false, xp: 25, gold: 12, minLevel: 5, skill: 'wisdom' },
     { id: 'q-db-checkin', baseId: null, title: 'Check-in Emocional no Diário', type: 'daily', icon: '📝', completed: false, xp: 15, gold: 8, minLevel: 5, skill: 'mental' },
     
@@ -43,7 +43,7 @@ const HABIT_LIBRARY = [
     { id: 'lib-visualizacao', title: 'Visualização de metas', icon: '🔮', difficulty: 'easy', skill: 'mental' },
 
     // Foco / Produtividade (Productivity)
-    { id: 'lib-deepwork', title: 'Deep Work (Foco total por 45 min)', icon: '💻', difficulty: 'medium', skill: 'productivity' },
+    { id: 'lib-deepwork', title: '30 min em projeto pessoal', icon: '💻', difficulty: 'medium', skill: 'productivity' },
     { id: 'lib-organizar', title: 'Organizar mesa de trabalho / Quarto', icon: '🧹', difficulty: 'easy', skill: 'productivity' },
     { id: 'lib-planejar', title: 'Planejar tarefas do dia seguinte', icon: '📅', difficulty: 'easy', skill: 'productivity' },
     { id: 'lib-revisar', title: 'Revisar objetivos semanais', icon: '🎯', difficulty: 'easy', skill: 'productivity', type: 'weekly', defaultDaysOfWeek: [0] },

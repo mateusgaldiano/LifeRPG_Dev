@@ -800,20 +800,20 @@ function applyArchetypeDeck(archetype, minutes) {
         if (archetype === 'corpo' || archetype === 'zen') {
             deck.push({ id: 'q-malhar', title: 'Treinar de Força / Corrida (45min)', type: 'daily', icon: '🏋️‍♂️', completed: false, xp: 30, gold: 15, minLevel: 1, skill: 'physical' });
         } else {
-            deck.push({ id: 'q-estudo', title: 'Deep Work / Foco ininterrupto (1h)', type: 'daily', icon: '💻', completed: false, xp: 30, gold: 15, minLevel: 1, skill: 'productivity' });
+            deck.push({ id: 'q-estudo', title: '30 min em projeto pessoal', type: 'daily', icon: '💻', completed: false, xp: 30, gold: 15, minLevel: 1, skill: 'productivity' });
         }
     }
 
     if (minutes >= 120) {
         // Hardcore: Um mix completo (Físico + Mental + Sabedoria + Social)
-        deck.push({ id: 'q-detox', title: '1h sem celular antes de dormir', type: 'daily', icon: '📵', completed: false, xp: 20, gold: 10, minLevel: 1, skill: 'mental' });
+        deck.push({ id: 'q-detox', title: 'Rotina Noturna', type: 'daily', icon: '📵', completed: false, xp: 20, gold: 10, minLevel: 1, skill: 'mental' });
         
         // Se já não tiver Treino, adiciona Treino. Se já não tiver Deep Work, adiciona Deep Work.
         const hasTreino = deck.some(q => q.id === 'q-malhar');
         const hasEstudo = deck.some(q => q.id === 'q-estudo');
         
         if (!hasTreino) deck.push({ id: 'q-malhar', title: 'Treinar de Força / Corrida', type: 'daily', icon: '🏋️‍♂️', completed: false, xp: 30, gold: 15, minLevel: 1, skill: 'physical' });
-        if (!hasEstudo) deck.push({ id: 'q-estudo', title: 'Deep Work / Estudos', type: 'daily', icon: '💻', completed: false, xp: 30, gold: 15, minLevel: 1, skill: 'productivity' });
+        if (!hasEstudo) deck.push({ id: 'q-estudo', title: '30 min em projeto pessoal', type: 'daily', icon: '💻', completed: false, xp: 30, gold: 15, minLevel: 1, skill: 'productivity' });
         
         deck.push({ id: 'q-social', title: 'Conectar com Família/Amigo (Sem tela)', type: 'daily', icon: '❤️', completed: false, xp: 15, gold: 8, minLevel: 1, skill: 'social' });
     }
