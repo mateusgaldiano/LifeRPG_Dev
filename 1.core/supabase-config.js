@@ -304,6 +304,7 @@ async function ensureUserProfile(authUser) {
         .upsert({
           person_id:      authUser.id,
           username:       gameState.playerName || authUser.email,
+          avatar_url:     authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
           level:          gameState.level,
           xp:             gameState.xp,
           gold:           gameState.gold,

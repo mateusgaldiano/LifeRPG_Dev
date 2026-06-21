@@ -11,7 +11,6 @@ CREATE TABLE persons (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   email      text UNIQUE NOT NULL,
   name       text NOT NULL,
-  birth_date date,
   created_at timestamptz DEFAULT now()
 );
 
@@ -22,6 +21,7 @@ CREATE TABLE users (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   person_id      uuid UNIQUE REFERENCES persons(id) ON DELETE CASCADE,
   username       text UNIQUE NOT NULL,
+  avatar_url     text,
   level          int DEFAULT 1,
   xp             int DEFAULT 0,
   gold           int DEFAULT 0,
