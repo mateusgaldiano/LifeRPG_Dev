@@ -81,6 +81,19 @@ function setupSettingsListeners() {
             });
         }
 
+        const btnSync = document.getElementById('btn-cloud-sync');
+        if (btnSync) {
+            btnSync.addEventListener('click', async () => {
+                if (typeof window.syncFromCloud === 'function') {
+                    btnSync.disabled = true;
+                    btnSync.textContent = 'Sincronizando...';
+                    await window.syncFromCloud();
+                    btnSync.disabled = false;
+                    btnSync.textContent = '☁️ SINCRONIZAR DADOS';
+                }
+            });
+        }
+
         // Clique fora para fechar
         window.addEventListener('click', (e) => {
             if (e.target === modalSettings) {

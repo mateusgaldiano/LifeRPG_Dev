@@ -650,6 +650,9 @@ function initOnboardingWizard() {
 
     // Passo 2: Arquétipo
     const btnNext2 = document.getElementById('btn-wizard-next-2');
+    const newBtnNext2 = btnNext2.cloneNode(true);
+    btnNext2.parentNode.replaceChild(newBtnNext2, btnNext2);
+
     const archCards = document.querySelectorAll('.archetype-card');
     const otherInputContainer = document.getElementById('wizard-other-container');
     const otherInput = document.getElementById('wizard-other-input');
@@ -663,36 +666,32 @@ function initOnboardingWizard() {
             
             if (selectedArch === 'outros') {
                 otherInputContainer.style.display = 'block';
-                btnNext2.disabled = otherInput.value.trim() === '';
+                newBtnNext2.disabled = otherInput.value.trim() === '';
             } else {
                 otherInputContainer.style.display = 'none';
-                btnNext2.disabled = false;
+                newBtnNext2.disabled = false;
             }
         });
     });
 
     otherInput.addEventListener('input', () => {
         if (selectedArch === 'outros') {
-            btnNext2.disabled = otherInput.value.trim() === '';
+            newBtnNext2.disabled = otherInput.value.trim() === '';
         }
     });
 
-    if (btnNext2) {
-        const newBtnNext2 = btnNext2.cloneNode(true);
-        btnNext2.parentNode.replaceChild(newBtnNext2, btnNext2);
-        newBtnNext2.addEventListener('click', () => {
-            if (selectedArch) {
-                if (selectedArch === 'outros') {
-                    gameState.archetype = otherInput.value.trim() || 'Desconhecido';
-                    setWizardStep('wizard-step-3');
-                } else {
-                    gameState.archetype = selectedArch;
-                    setupHookStep(selectedArch);
-                    setWizardStep('wizard-step-hook');
-                }
+    newBtnNext2.addEventListener('click', () => {
+        if (selectedArch) {
+            if (selectedArch === 'outros') {
+                gameState.archetype = otherInput.value.trim() || 'Desconhecido';
+                setWizardStep('wizard-step-3');
+            } else {
+                gameState.archetype = selectedArch;
+                setupHookStep(selectedArch);
+                setWizardStep('wizard-step-hook');
             }
-        });
-    }
+        }
+    });
 
     // Passo Hook
     const btnNextHook = document.getElementById('btn-wizard-next-hook');
@@ -1207,7 +1206,7 @@ function renderQuests() {
             if (quest.current !== undefined && quest.target !== undefined) {
                 extraHTML = `<div class="water-adjust-row">
                     <button class="water-btn btn-minus" data-id="${quest.id}">−</button>
-                    <span class="water-val">${quest.current || 0}/${quest.target} copos</span>
+                    <span class="water-val">${quest.current || 0}/${quest.target || 8} copos</span>
                     <button class="water-btn btn-plus" data-id="${quest.id}">+</button>
                 </div>`;
             }

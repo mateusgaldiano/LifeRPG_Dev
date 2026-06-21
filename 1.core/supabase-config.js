@@ -238,6 +238,10 @@ window.updateCloudStatusUI = function(online) {
   if (btnLogout) {
     btnLogout.style.display = online ? '' : 'none';
   }
+  const btnSync = document.getElementById('btn-cloud-sync');
+  if (btnSync) {
+    btnSync.style.display = online ? '' : 'none';
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -394,6 +398,9 @@ window.syncFromCloud = async function() {
 
     saveGameData(); // persiste no localStorage também
     updateUI();
+    if (typeof showSystemToast === 'function') {
+        showSystemToast('☁️ Dados da nuvem carregados com sucesso.');
+    }
   } else {
     // Local ganha — subir para a nuvem
     await saveToSupabase();
@@ -432,13 +439,15 @@ window.syncFromCloud = async function() {
 window.saveToSupabase = async function() {
   if (!window._currentUserDbId) return;
 
-  const isDefaultState = gameState.level <= 1
+  const isAbsolutelyEmpty = !gameState.playerName
+      && gameState.level <= 1
       && gameState.xp === 0
       && gameState.gold === 0
-      && (gameState.quests || []).length === 0;
+      && (gameState.quests || []).length === 0
+      && (gameState.streak || 0) === 0;
 
-  if (isDefaultState) {
-      console.warn('[Sync] Estado padrão detectado — sync abortado');
+  if (isAbsolutelyEmpty) {
+      console.warn('[Sync] Estado completamente vazio – sync abortado');
       return;
   }
 
@@ -487,6 +496,9 @@ window.saveToSupabase = async function() {
     // Re-trackear presença com os dados de nível/rank atualizados
     if (typeof window.initPresence === 'function') {
       window.initPresence(window._currentUserDbId, gameState.playerName, gameState.level, rankLetter);
+    }
+    if (typeof showSystemToast === 'function') {
+        showSystemToast('☁️ Dados sincronizados com a nuvem.');
     }
   }
 };
@@ -545,6 +557,17 @@ window.loadQuestsFromSupabase = async function() {
 
   if (error || !data) return;
 
+  const completedToday = new Set(
+    (gameState.quests || [])
+      .filter(q => q.completed)
+      .map(q => q.id)
+  );
+  const completedTodaySide = new Set(
+    (gameState.sideQuests || [])
+      .filter(q => q.completed)
+      .map(q => q.id)
+  );
+
   gameState.quests = data
     .filter(q => q.type === 'daily' || (typeof q.type === 'string' && q.type.startsWith('weekly-')))
     .map(q => {
@@ -565,10 +588,10 @@ window.loadQuestsFromSupabase = async function() {
         gold: q.gold,
         emoji: q.emoji,
         icon: q.emoji,
-        completed: q.completed,
+        completed: completedToday.has(q.local_id) ? true : !!q.completed,
         fromLibrary: q.from_library,
-        current: q.current,
-        target: q.target,
+        current: q.current !== null && q.current !== undefined ? q.current : (q.local_id?.includes('agua') || q.title?.includes('Água') ? 0 : undefined),
+        target: q.target !== null && q.target !== undefined ? q.target : (q.local_id?.includes('agua') || q.title?.includes('Água') ? 8 : undefined),
       };
     });
 
@@ -584,7 +607,7 @@ window.loadQuestsFromSupabase = async function() {
       gold: q.gold,
       emoji: q.emoji,
       icon: q.emoji,
-      completed: q.completed,
+      completed: completedTodaySide.has(q.local_id) ? true : !!q.completed,
       fromLibrary: q.from_library,
     }));
 };
