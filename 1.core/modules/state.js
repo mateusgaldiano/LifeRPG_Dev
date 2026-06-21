@@ -530,12 +530,31 @@ function loadGameData() {
         for (const key in gameState) delete gameState[key]; Object.assign(gameState, parsed);
         
         // Sanitize legacy corrupted icons in saved quests
+        const cleanQuestCounters = (q) => {
+            const isWater = q.id?.includes('agua') || 
+                            q.title?.toLowerCase().includes('água') || 
+                            q.title?.toLowerCase().includes('agua') || 
+                            q.icon === '💧' || 
+                            q.emoji === '💧';
+            if (!isWater) {
+                delete q.current;
+                delete q.target;
+            } else {
+                if (q.current === undefined || q.current === null) q.current = 0;
+                if (q.target === undefined || q.target === null) q.target = 8;
+            }
+        };
+
         if (gameState.quests) {
             gameState.quests.forEach(q => {
                 if (q.id === 'q-cama' && (!q.icon || q.icon.includes('<') || q.icon.includes('\u0005'))) {
                     q.icon = '🛏️';
                 }
+                cleanQuestCounters(q);
             });
+        }
+        if (gameState.sideQuests) {
+            gameState.sideQuests.forEach(cleanQuestCounters);
         }
 
         if (typeof gameState.streak !== 'number') {

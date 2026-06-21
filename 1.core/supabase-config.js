@@ -592,8 +592,12 @@ window.loadQuestsFromSupabase = async function() {
         icon: q.emoji,
         completed: completedToday.has(q.local_id) ? true : !!q.completed,
         fromLibrary: q.from_library,
-        current: q.current !== null && q.current !== undefined ? q.current : (q.local_id?.includes('agua') || q.title?.includes('Água') ? 0 : undefined),
-        target: q.target !== null && q.target !== undefined ? q.target : (q.local_id?.includes('agua') || q.title?.includes('Água') ? 8 : undefined),
+        current: (q.local_id?.includes('agua') || q.title?.toLowerCase().includes('água') || q.title?.toLowerCase().includes('agua') || q.emoji === '💧')
+          ? (q.current !== null && q.current !== undefined ? q.current : 0)
+          : undefined,
+        target: (q.local_id?.includes('agua') || q.title?.toLowerCase().includes('água') || q.title?.toLowerCase().includes('agua') || q.emoji === '💧')
+          ? (q.target !== null && q.target !== undefined ? q.target : 8)
+          : undefined,
       };
     });
 

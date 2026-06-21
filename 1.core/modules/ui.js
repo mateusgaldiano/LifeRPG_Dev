@@ -1215,7 +1215,12 @@ function renderQuests() {
             const diffLabel = diffMap[quest.skill] || 'RANK E';
 
             let extraHTML = '';
-            if (quest.current !== undefined && quest.target !== undefined) {
+            const isWater = quest.id?.includes('agua') || 
+                            quest.title?.toLowerCase().includes('água') || 
+                            quest.title?.toLowerCase().includes('agua') || 
+                            quest.icon === '💧' || 
+                            quest.emoji === '💧';
+            if (isWater && quest.current !== undefined && quest.target !== undefined) {
                 extraHTML = `<div class="water-adjust-row">
                     <button class="water-btn btn-minus" data-id="${quest.id}">−</button>
                     <span class="water-val">${quest.current || 0}/${quest.target || 8} copos</span>
