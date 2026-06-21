@@ -628,10 +628,28 @@ function syncQuestsByLevel() {
     
     // 2. Adiciona as novas do banco de dados que foram desbloqueadas e ainda não constam
     unlockedHabits.forEach(dbHabit => {
-        let exists = updatedQuests.some(q =>
-            q.id === dbHabit.id ||
-            (dbHabit.baseId && q.id === dbHabit.baseId)
-        );
+        let exists = updatedQuests.some(q => {
+            if (q.id === dbHabit.id || (dbHabit.baseId && q.id === dbHabit.baseId)) return true;
+            
+            // Previne colisões de hábitos com o mesmo propósito (água, treino, meditação, leitura, acordar, família)
+            const t1 = q.title.toLowerCase();
+            const t2 = dbHabit.title.toLowerCase();
+            const keywords = [
+                ['água', 'agua', 'copo', 'copos', '💧'],
+                ['treinar', 'malhar', 'corrida', 'força', 'força / corrida', 'forca', 'exercício', 'academia', 'calistenia', '🏋️'],
+                ['meditar', 'meditação', 'meditacao', '🧘'],
+                ['leitura', 'ler', 'livro', '📚'],
+                ['acordar', '🌅'],
+                ['cama', '🛏️'],
+                ['família', 'familia', 'amigo', 'social', 'conectar', '❤️', '📞']
+            ];
+            for (const group of keywords) {
+                const q1Matches = group.some(kw => t1.includes(kw) || q.icon === kw || q.emoji === kw || q.id?.includes(kw));
+                const q2Matches = group.some(kw => t2.includes(kw) || dbHabit.icon === kw || dbHabit.emoji === kw || dbHabit.id?.includes(kw));
+                if (q1Matches && q2Matches) return true;
+            }
+            return false;
+        });
         if (!exists) {
             const fresh = { ...dbHabit };
             // Preserva progresso de água se já existia quest similar
