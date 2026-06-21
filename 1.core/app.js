@@ -299,12 +299,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window._currentUserDbId) {
                 // Usuário logado
                 if (isReturningUser) {
-                    if (tutorialCompleted) {
-                        if (wizardModal) wizardModal.style.cssText = 'display: none !important;';
-                        checkFeatureUnlocks();
-                    } else {
-                        initOnboardingWizard();
-                    }
+                    // Se já tiver conta (isReturningUser === true), pule o onboarding
+                    gameState.tutorialCompleted = true;
+                    gameState.tutorialStep = null;
+                    saveGameData();
+                    if (wizardModal) wizardModal.style.cssText = 'display: none !important;';
+                    checkFeatureUnlocks();
                 } else {
                     if (gameState.tutorialCompleted) {
                         if (wizardModal) wizardModal.style.cssText = 'display: none !important;';

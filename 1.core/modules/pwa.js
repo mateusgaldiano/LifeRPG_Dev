@@ -178,15 +178,29 @@ function setupSettingsListeners() {
     // Hard Reset (Destruição do Sistema)
     const btnHardReset = document.getElementById('btn-hard-reset');
     if (btnHardReset) {
-        btnHardReset.addEventListener('click', () => {
+        btnHardReset.addEventListener('click', async () => {
             const confirmed = confirm("🔥 TEM CERTEZA QUE DESEJA APAGAR TODO O SEU PROGRESSO?\n\nEsta ação destruirá seu histórico, atributos, missões e inventário. Você voltará ao nível 1 e o Onboarding será reiniciado.\n\nESTA AÇÃO NÃO PODE SER DESFEITA.");
-            if (confirmed) {
-                localStorage.removeItem('lifeRPG_gameState');
-                localStorage.removeItem('force_reset_v4');
-                localStorage.removeItem('lifeRPG_chatCache');
-                alert("O Sistema foi resetado. Reiniciando simulação...");
-                window.location.reload();
+            if (!confirmed) return;
+
+            if (gameState.level > 5) {
+                const confirmLevel5 = confirm(`⚠️ NÍVEL ATUAL: ${gameState.level}\n\nVocê tem certeza absoluta de que deseja apagar todo o seu progresso? Você perderá todos os seus níveis, itens, conquistas, XP e todo o seu Ouro. Esta ação não poderá ser desfeita.`);
+                if (!confirmLevel5) return;
             }
+
+            // Se estiver logado, deletar o perfil correspondente na nuvem do Supabase
+            if (window._currentUserDbId && typeof window.deleteCurrentUserCloudProfile === 'function') {
+                try {
+                    await window.deleteCurrentUserCloudProfile();
+                } catch (e) {
+                    console.error('[Hard Reset] Erro ao limpar perfil na nuvem:', e);
+                }
+            }
+
+            localStorage.removeItem('lifeRPG_gameState');
+            localStorage.removeItem('force_reset_v4');
+            localStorage.removeItem('lifeRPG_chatCache');
+            alert("O Sistema foi resetado. Reiniciando simulação...");
+            window.location.reload();
         });
     }
 }

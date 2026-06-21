@@ -762,3 +762,15 @@ window.getUserDuelsWithScores = async () => {
   return await supabaseClient.rpc('get_user_duels_with_scores');
 };
 
+window.deleteCurrentUserCloudProfile = async function() {
+  if (!window._currentUserDbId) return;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) return;
+  const { error } = await supabaseClient.from('users').delete().eq('person_id', user.id);
+  if (error) {
+    console.error('[Supabase] Erro ao deletar perfil da nuvem:', error);
+  } else {
+    console.log('[Supabase] Perfil da nuvem deletado com sucesso');
+  }
+};
+
