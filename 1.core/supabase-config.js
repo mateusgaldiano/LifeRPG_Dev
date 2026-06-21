@@ -99,10 +99,19 @@ window.logoutSupabase = async function() {
   // Limpa o cache local do chat de outros usuários por privacidade
   localStorage.removeItem('lifeRPG_chatCache');
 
-  await supabaseClient.auth.signOut();
+  try {
+    await supabaseClient.auth.signOut();
+  } catch (err) {
+    console.error('[Supabase Auth signOut error]', err);
+  }
+
+  localStorage.removeItem('lifeRPG_gameState');
+  localStorage.removeItem('force_reset_v4');
   window._currentUserDbId = null;
-  // Atualizar UI para estado "Não sincronizado"
+
+  // Atualizar UI e recarregar
   updateCloudStatusUI(false);
+  window.location.reload();
 };
 
 // --------------------------------------------------------------------------
