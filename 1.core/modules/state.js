@@ -40,50 +40,79 @@ const ALL_HABITS_DATABASE = [
     { id: 'q-db-encontro', baseId: 'q-encontro', title: 'Encontro social presencial sem telas (60 min)', type: 'daily', icon: '👥', completed: false, xp: 40, gold: 20, duration: 60, minLevel: 10, skill: 'social' }
 ];
 
-// Biblioteca mestre de 30 hábitos curados para a aba Biblioteca do modal
+// Biblioteca mestre de 60 hábitos curados para a aba Biblioteca do modal
 const HABIT_LIBRARY = [
-    // Físico (Physical)
-    { id: 'lib-corrida', title: 'Treino de Corrida (20 min)', icon: '🏃', difficulty: 'easy', duration: 20, skill: 'physical' },
-    { id: 'lib-forca', title: 'Treino de Força (Calistenia/Academia) (45 min)', icon: '🏋️‍♂️', difficulty: 'medium', duration: 45, skill: 'physical' },
-    { id: 'lib-alongamento', title: 'Alongamento / Mobilidade (10 min)', icon: '🧘', difficulty: 'easy', duration: 10, skill: 'physical' },
-    { id: 'lib-caminhada', title: 'Caminhada de 5.000 passos (30 min)', icon: '🚶', difficulty: 'easy', duration: 30, skill: 'physical' },
-    { id: 'lib-alimentacao', title: 'Refeição 100% limpa (Sem doces) (10 min)', icon: '🥦', difficulty: 'medium', duration: 10, skill: 'physical' },
+    // Físico (physical)
+    { id: 'lib-agua', title: 'Beber 2 litros de água ao longo do dia', icon: '💧', difficulty: 'easy', duration: 5, skill: 'physical' },
+    { id: 'lib-along-easy', title: 'Alongamento rápido de mobilidade ao acordar', icon: '🧘', difficulty: 'easy', duration: 10, skill: 'physical' },
+    { id: 'lib-hiit-med', title: 'Treino HIIT / Aeróbico de alta intensidade em casa', icon: '🔥', difficulty: 'medium', duration: 20, skill: 'physical' },
+    { id: 'lib-caminhada-med', title: 'Caminhada ativa ao ar livre / corrida leve', icon: '🚶', difficulty: 'medium', duration: 30, skill: 'physical' },
+    { id: 'lib-caminhada2-med', title: 'Caminhada ativa ao ar livre em ritmo acelerado', icon: '🚶‍♂️', difficulty: 'medium', duration: 45, skill: 'physical' },
+    { id: 'lib-forca-hard', title: 'Treino de força (calistenia, peso corporal ou academia)', icon: '🏋️‍♂️', difficulty: 'hard', duration: 45, skill: 'physical' },
+    { id: 'lib-ciclo-hard', title: 'Prática de ciclismo ou atividade esportiva intensa', icon: '🚴', difficulty: 'hard', duration: 60, skill: 'physical' },
+    { id: 'lib-musc-hard', title: 'Treino de musculação ou natação completo', icon: '🏊', difficulty: 'hard', duration: 60, skill: 'physical' },
+    { id: 'lib-respirar2-easy', title: 'Exercícios de respiração profunda e expansão pulmonar', icon: '🫁', difficulty: 'easy', duration: 5, skill: 'physical' },
+    { id: 'lib-exerc-easy', title: 'Fazer 20 agachamentos livres e 10 flexões de braço', icon: '💪', difficulty: 'easy', duration: 5, skill: 'physical' },
 
-    // Mental (Mental)
-    { id: 'lib-meditacao', title: 'Meditação Guiada (10 min)', icon: '🧘', difficulty: 'easy', duration: 10, skill: 'mental' },
-    { id: 'lib-gratidao', title: 'Diário de Gratidão (3 coisas) (5 min)', icon: '📝', difficulty: 'easy', duration: 5, skill: 'mental' },
-    { id: 'lib-humor', title: 'Fazer check-in de humor (2 min)', icon: '💭', difficulty: 'easy', duration: 2, skill: 'mental' },
-    { id: 'lib-respiracao', title: 'Respiração controlada (5 min)', icon: '🌬️', difficulty: 'easy', duration: 5, skill: 'mental' },
-    { id: 'lib-visualizacao', title: 'Visualização de metas (5 min)', icon: '🔮', difficulty: 'easy', duration: 5, skill: 'mental' },
+    // Mental (mental)
+    { id: 'lib-bd-easy', title: 'Descarregar preocupações em papel (Brain Dump)', icon: '🧠', difficulty: 'easy', duration: 5, skill: 'mental' },
+    { id: 'lib-nature-easy', title: 'Ouvir sons da natureza / ruído branco sem telas', icon: '🎵', difficulty: 'easy', duration: 10, skill: 'mental' },
+    { id: 'lib-medplena-med', title: 'Meditação Guiada de Atenção Plena', icon: '🧘', difficulty: 'medium', duration: 15, skill: 'mental' },
+    { id: 'lib-diario-med', title: 'Leitura reflexiva ou escrita em diário íntimo', icon: '✍️', difficulty: 'medium', duration: 20, skill: 'mental' },
+    { id: 'lib-medprof-hard', title: 'Meditação silenciosa ou contemplação profunda', icon: '🧘‍♂️', difficulty: 'hard', duration: 30, skill: 'mental' },
+    { id: 'lib-afirm-easy', title: 'Escrever 3 afirmações positivas de autoimagem e repetir', icon: '🗣️', difficulty: 'easy', duration: 3, skill: 'mental' },
+    { id: 'lib-visual-easy', title: 'Exercício diário de visualização ativa de metas futuras', icon: '🔮', difficulty: 'easy', duration: 10, skill: 'mental' },
+    { id: 'lib-decomp-easy', title: 'Deitar em silêncio absoluto sem dormir (Descompressão)', icon: '🧘', difficulty: 'easy', duration: 10, skill: 'mental' },
+    { id: 'lib-express-med', title: 'Escrita expressiva em diário sobre sentimentos e reflexões', icon: '✍️', difficulty: 'medium', duration: 15, skill: 'mental' },
+    { id: 'lib-medprof2-hard', title: 'Sessão de meditação silenciosa profunda e deitada', icon: '🧘‍♂️', difficulty: 'hard', duration: 45, skill: 'mental' },
 
-    // Foco / Produtividade (Productivity)
-    { id: 'lib-deepwork', title: '30 min em projeto pessoal', icon: '💻', difficulty: 'medium', duration: 30, skill: 'productivity' },
-    { id: 'lib-organizar', title: 'Organizar mesa de trabalho / Quarto (15 min)', icon: '🧹', difficulty: 'easy', duration: 15, skill: 'productivity' },
-    { id: 'lib-planejar', title: 'Planejar tarefas do dia seguinte (10 min)', icon: '📅', difficulty: 'easy', duration: 10, skill: 'productivity' },
-    { id: 'lib-revisar', title: 'Revisar objetivos semanais (20 min)', icon: '🎯', difficulty: 'easy', duration: 20, skill: 'productivity', type: 'weekly', defaultDaysOfWeek: [0] },
-    { id: 'lib-estudar-ferramenta', title: 'Estudar nova ferramenta (30 min)', icon: '🌐', difficulty: 'medium', duration: 30, skill: 'productivity' },
+    // Foco / Produtividade (productivity)
+    { id: 'lib-mit-easy', title: 'Definir e planejar a Tarefa Mais Importante (MIT) do dia', icon: '🎯', difficulty: 'easy', duration: 5, skill: 'productivity' },
+    { id: 'lib-dist-easy', title: 'Bloquear distrações físicas/digitais antes do trabalho', icon: '🚫', difficulty: 'easy', duration: 5, skill: 'productivity' },
+    { id: 'lib-tempo-easy', title: 'Planejar os blocos de tempo para o dia seguinte', icon: '⏳', difficulty: 'easy', duration: 10, skill: 'productivity' },
+    { id: 'lib-pomo-med', title: 'Bloco Pomodoro de trabalho ultra-focado', icon: '⏱️', difficulty: 'medium', duration: 25, skill: 'productivity' },
+    { id: 'lib-deepwork-hard', title: 'Bloco profundo de trabalho em projeto pessoal (Deep Work)', icon: '💻', difficulty: 'hard', duration: 45, skill: 'productivity' },
+    { id: 'lib-captura-easy', title: 'Anotar ideias rápidas acumuladas no dia em lista de captura', icon: '💡', difficulty: 'easy', duration: 5, skill: 'productivity' },
+    { id: 'lib-poeira-easy', title: 'Limpar poeira e organizar sua mesa de trabalho física', icon: '🧹', difficulty: 'easy', duration: 10, skill: 'productivity' },
+    { id: 'lib-limpdig-med', title: 'Bloco focado em tarefas administrativas / limpeza digital', icon: '⚙️', difficulty: 'medium', duration: 20, skill: 'productivity' },
+    { id: 'lib-estrat-med', title: 'Trabalhar focado em uma tarefa estratégica sem interrupções', icon: '💻', difficulty: 'medium', duration: 30, skill: 'productivity' },
+    { id: 'lib-deepwork2-hard', title: 'Bloco de trabalho profundo, focado e ininterrupto (Deep Work)', icon: '🧠', difficulty: 'hard', duration: 90, skill: 'productivity' },
 
-    // Saber / Sabedoria (Wisdom)
-    { id: 'lib-ler-livro', title: 'Ler 10 páginas de um livro (15 min)', icon: '📚', difficulty: 'easy', duration: 15, skill: 'wisdom' },
-    { id: 'lib-aula-podcast', title: 'Assistir 1 aula/podcast educativo (20 min)', icon: '🎧', difficulty: 'easy', duration: 20, skill: 'wisdom' },
-    { id: 'lib-escrita-criativa', title: 'Praticar escrita criativa (15 min)', icon: '✍️', difficulty: 'easy', duration: 15, skill: 'wisdom' },
-    { id: 'lib-curso-online', title: 'Fazer um curso online (30 min)', icon: '🧠', difficulty: 'medium', duration: 30, skill: 'wisdom' },
-    { id: 'lib-logica-xadrez', title: 'Resolver 3 problemas de xadrez (15 min)', icon: '🧩', difficulty: 'easy', duration: 15, skill: 'wisdom' },
+    // Saber / Sabedoria (wisdom)
+    { id: 'lib-aprend-easy', title: 'Anotar os aprendizados práticos do dia no diário', icon: '✍️', difficulty: 'easy', duration: 5, skill: 'wisdom' },
+    { id: 'lib-financas-easy', title: 'Lançar despesas e receitas diárias no controle financeiro', icon: '💰', difficulty: 'easy', duration: 5, skill: 'wisdom' },
+    { id: 'lib-duolingo-easy', title: 'Praticar aula de outro idioma em aplicativo (Duolingo)', icon: '🗣️', difficulty: 'easy', duration: 15, skill: 'wisdom' },
+    { id: 'lib-livro-med', title: 'Ler livro de desenvolvimento pessoal ou estudo técnico', icon: '📚', difficulty: 'medium', duration: 30, skill: 'wisdom' },
+    { id: 'lib-curso-hard', title: 'Assistir a curso online ou videoaula educativa', icon: '🧠', difficulty: 'hard', duration: 45, skill: 'wisdom' },
+    { id: 'lib-conceito-easy', title: 'Estudar a definição de 1 conceito técnico ou científico novo', icon: '📖', difficulty: 'easy', duration: 5, skill: 'wisdom' },
+    { id: 'lib-idioma-easy', title: 'Fazer lições diárias de idioma em aplicativo (Duolingo)', icon: '🗣️', difficulty: 'easy', duration: 10, skill: 'wisdom' },
+    { id: 'lib-ted-easy', title: 'Assistir a vídeo educativo curto ou TED Talk relevante', icon: '📺', difficulty: 'easy', duration: 15, skill: 'wisdom' },
+    { id: 'lib-leitura2-med', title: 'Leitura técnica/científica ativa anotando aprendizados', icon: '📚', difficulty: 'medium', duration: 30, skill: 'wisdom' },
+    { id: 'lib-estudolong-hard', title: 'Estudo aprofundado em curso online ou livro complexo', icon: '🧠', difficulty: 'hard', duration: 60, skill: 'wisdom' },
 
-    // Rotina (Routine)
-    { id: 'lib-sem-celular', title: 'Sem celular ao acordar por 30 min (30 min)', icon: '🚫', difficulty: 'medium', duration: 30, skill: 'routine' },
-    { id: 'lib-cama', title: 'Arrumei a cama ao levantar (2 min)', icon: '🛏️', difficulty: 'easy', duration: 2, skill: 'routine' },
-    { id: 'lib-dormir-cedo', title: 'Dormir antes das 23h (10 min)', icon: '💤', difficulty: 'medium', duration: 10, skill: 'routine' },
-    { id: 'lib-skincare', title: 'Skincare matinal / noturno (5 min)', icon: '🧴', difficulty: 'easy', duration: 5, skill: 'routine' },
-    { id: 'lib-preparar-dia', title: 'Preparar roupas para amanhã (5 min)', icon: '💼', difficulty: 'easy', duration: 5, skill: 'routine' },
-    { id: 'lib-meal-prep', title: 'Meal Prep Semanal (60 min)', icon: '🥦', difficulty: 'medium', duration: 60, skill: 'routine', type: 'weekly', defaultDaysOfWeek: [0] },
+    // Rotina (routine)
+    { id: 'lib-dente-easy', title: 'Fio dental e higienização bucal completa antes de dormir', icon: '🪥', difficulty: 'easy', duration: 5, skill: 'routine' },
+    { id: 'lib-roupa-easy', title: 'Preparar roupas e organizar bolsa para o dia seguinte', icon: '💼', difficulty: 'easy', duration: 5, skill: 'routine' },
+    { id: 'lib-casa-easy', title: 'Organizar a casa (lavar louça e arrumar superfícies)', icon: '🍽️', difficulty: 'easy', duration: 15, skill: 'routine' },
+    { id: 'lib-cozinhar-med', title: 'Preparar e cozinhar uma refeição saudável do zero', icon: '🥦', difficulty: 'medium', duration: 30, skill: 'routine' },
+    { id: 'lib-faxina-hard', title: 'Faxina diária concentrada / Organização de cômodos', icon: '🧼', difficulty: 'hard', duration: 45, skill: 'routine' },
+    { id: 'lib-skincare-easy', title: 'Higienização da pele (Skincare básico matinal/noturno)', icon: '🧴', difficulty: 'easy', duration: 5, skill: 'routine' },
+    { id: 'lib-plantas-easy', title: 'Cuidar e regar as plantas ou vasos da casa', icon: '🪴', difficulty: 'easy', duration: 10, skill: 'routine' },
+    { id: 'lib-louca-easy', title: 'Lavar e secar a louça acumulada da principal refeição', icon: '🍽️', difficulty: 'easy', duration: 15, skill: 'routine' },
+    { id: 'lib-rotnoite-med', title: 'Rotina Noturna completa (desconexão, chá, luz baixa)', icon: '📵', difficulty: 'medium', duration: 30, skill: 'routine' },
+    { id: 'lib-mealprep-med', title: 'Preparação de refeições saudáveis (Meal Prep diário)', icon: '🥦', difficulty: 'medium', duration: 45, skill: 'routine' },
 
-    // Social (Social)
-    { id: 'lib-familia-msg', title: 'Mensagem carinhosa para família (3 min)', icon: '❤️', difficulty: 'easy', duration: 3, skill: 'social' },
-    { id: 'lib-amigo-ligar', title: 'Ligar para um amigo antigo (15 min)', icon: '📞', difficulty: 'medium', duration: 15, skill: 'social' },
-    { id: 'lib-escuta-ativa', title: 'Praticar escuta ativa (10 min)', icon: '👂', difficulty: 'easy', duration: 10, skill: 'social' },
-    { id: 'lib-ajudar-alguem', title: 'Ajudar alguém de forma altruísta (10 min)', icon: '🤝', difficulty: 'medium', duration: 10, skill: 'social' },
-    { id: 'lib-evento-grupo', title: 'Participar de grupo comunitário (60 min)', icon: '👥', difficulty: 'hard', duration: 60, skill: 'social' }
+    // Social (social)
+    { id: 'lib-elogio-easy', title: 'Dar um elogio sincero a alguém próximo', icon: '💬', difficulty: 'easy', duration: 2, skill: 'social' },
+    { id: 'lib-niver-easy', title: 'Enviar mensagem de carinho ou parabéns para alguém', icon: '🎂', difficulty: 'easy', duration: 3, skill: 'social' },
+    { id: 'lib-ligar-med', title: 'Ligar para um amigo ou familiar distante para conversar', icon: '📞', difficulty: 'medium', duration: 15, skill: 'social' },
+    { id: 'lib-jantar-med', title: 'Fazer uma refeição dedicada em família/amigos sem celular', icon: '👥', difficulty: 'medium', duration: 30, skill: 'social' },
+    { id: 'lib-familia-hard', title: 'Dedicar tempo a escuta ativa e diálogo com parceiro/filho', icon: '❤️', difficulty: 'hard', duration: 45, skill: 'social' },
+    { id: 'lib-amigo-easy', title: 'Enviar mensagem curta a um amigo para saber se está bem', icon: '💬', difficulty: 'easy', duration: 3, skill: 'social' },
+    { id: 'lib-bilhete-easy', title: 'Deixar bilhete físico ou mensagem carinhosa para familiar', icon: '📝', difficulty: 'easy', duration: 2, skill: 'social' },
+    { id: 'lib-video-med', title: 'Conversa por telefone ou videochamada com parente próximo', icon: '📞', difficulty: 'medium', duration: 20, skill: 'social' },
+    { id: 'lib-pet-med', title: 'Passear com animal de estimação ou acompanhar parceiro em caminhada', icon: '🐕', difficulty: 'medium', duration: 30, skill: 'social' },
+    { id: 'lib-qualidade-hard', title: 'Dedicar tempo de qualidade e conversa profunda com familiares', icon: '👥', difficulty: 'hard', duration: 60, skill: 'social' }
 ];
 
 // 📆 Utilitário de Data Local (timezone-safe) 📆

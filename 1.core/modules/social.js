@@ -183,6 +183,7 @@ function addHabitFromLibrary(h, type = 'daily', daysOfWeek = []) {
         type:      type,           // 'daily', 'side' ou 'weekly'
         skill:     h.skill,
         difficulty: h.difficulty,
+        duration:  h.duration || 5,
         xp:        xp,
         gold:      gold,
         emoji:     h.icon || '⚔️',
