@@ -159,7 +159,8 @@ export let gameState = {
     lastWelcomeDateShown: "",   // guarda a data do último toast de boas-vindas (YYYY-MM-DD)
     tutorialStep: 1,
     tutorialCompleted: false,
-    friendsCount: 0
+    friendsCount: 0,
+    _lastSyncedAt: ""
 };
 
 // Banco de Frases de Impacto

@@ -387,7 +387,9 @@ window.syncFromCloud = async function() {
 
   const cloudIsNewer =
     cloudUser.level > gameState.level ||
-    (cloudUser.level === gameState.level && cloudUser.streak > gameState.streak);
+    (cloudUser.level === gameState.level && cloudUser.streak > gameState.streak) ||
+    (cloudUser.level === gameState.level && cloudUser.streak === gameState.streak &&
+      cloudUser.last_active_at && new Date(cloudUser.last_active_at) > new Date(gameState._lastSyncedAt || 0));
 
   if (cloudIsNewer) {
     // Nuvem ganha — sobrescrever estado local
@@ -507,6 +509,7 @@ window.saveToSupabase = async function() {
       showSystemToast(`⚠️ Erro de Sincronização: ${friendlyMessage}`);
     }
   } else {
+    gameState._lastSyncedAt = new Date().toISOString();
     // Re-trackear presença com os dados de nível/rank atualizados
     if (typeof window.initPresence === 'function') {
       window.initPresence(window._currentUserDbId, gameState.playerName, gameState.level, rankLetter);
