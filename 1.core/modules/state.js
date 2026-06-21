@@ -151,12 +151,15 @@ const IMPACT_QUOTES = [
 
 //  Sistema de RANK (Solo Leveling) 
 const RANK_THRESHOLDS = [
+    { min: 35, rank: 'Monarca', css: 'rank-monarca' },
+    { min: 30, rank: 'Governante', css: 'rank-governante' },
+    { min: 25, rank: 'Nacional', css: 'rank-nacional' },
     { min: 20, rank: 'RANK S', css: 'rank-s' },
-    { min: 15, rank: 'RANK A', css: 'rank-a' },
-    { min: 10, rank: 'RANK B', css: 'rank-b' },
-    { min: 5,  rank: 'RANK C', css: 'rank-c' },
-    { min: 3,  rank: 'RANK D', css: 'rank-d' },
-    { min: 1,  rank: 'RANK E', css: 'rank-e' }
+    { min: 15, rank: 'RANK B', css: 'rank-b' },
+    { min: 10, rank: 'RANK C', css: 'rank-c' },
+    { min: 5,  rank: 'RANK D', css: 'rank-d' },
+    { min: 3,  rank: 'RANK E', css: 'rank-e' },
+    { min: 1,  rank: 'Candidato', css: 'rank-candidato' }
 ];
 
 
@@ -197,20 +200,20 @@ const BOSS_QUESTS = {
             return `${Math.min(lv3count, 4)}/4 skills em LV3+`;
         }
     },
-    'b-to-a': {
-        id: 'b-to-a',
+    'b-to-s': {
+        id: 'b-to-s',
         title: 'Vigília do Estoico',
         description: 'Mantenha uma sequência de 14 dias consecutivos.',
-        rankFrom: 'RANK B', rankTo: 'RANK A',
+        rankFrom: 'RANK B', rankTo: 'RANK S',
         xpReward: 600, goldReward: 180,
         check: () => (gameState.streak || 0) >= 14,
         progress: () => `${Math.min(gameState.streak || 0, 14)}/14 dias de streak`
     },
-    'a-to-s': {
-        id: 'a-to-s',
+    's-to-nacional': {
+        id: 's-to-nacional',
         title: 'O Sistema Completo',
         description: 'Eleve TODAS as 6 skills para o Nível 5 simultaneamente.',
-        rankFrom: 'RANK A', rankTo: 'RANK S',
+        rankFrom: 'RANK S', rankTo: 'Nacional',
         xpReward: 1000, goldReward: 300,
         check: () => {
             const skills = gameState.skills || {};
@@ -221,6 +224,24 @@ const BOSS_QUESTS = {
             const lv5count = Object.values(skills).filter(s => s.level >= 5).length;
             return `${lv5count}/6 skills em LV5+`;
         }
+    },
+    'nacional-to-governante': {
+        id: 'nacional-to-governante',
+        title: 'Força de Autoridade',
+        description: 'Chegue a uma sequência de 30 dias de streak.',
+        rankFrom: 'Nacional', rankTo: 'Governante',
+        xpReward: 1500, goldReward: 500,
+        check: () => (gameState.streak || 0) >= 30,
+        progress: () => `${Math.min(gameState.streak || 0, 30)}/30 dias de streak`
+    },
+    'governante-to-monarca': {
+        id: 'governante-to-monarca',
+        title: 'O Trono Vazio',
+        description: 'Complete 100 quests no total.',
+        rankFrom: 'Governante', rankTo: 'Monarca',
+        xpReward: 2500, goldReward: 1000,
+        check: () => true, // Auto-completa ou check simbólico
+        progress: () => `Desafio Supremo Liberado`
     }
 };
 

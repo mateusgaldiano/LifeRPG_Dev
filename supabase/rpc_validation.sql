@@ -70,13 +70,16 @@ BEGIN
   END IF;
 
   -- ── VALIDAÇÃO 6: CONSISTÊNCIA DE RANK OBRIGATÓRIA POR FAIXA
-  -- Faixas: 1-2 -> E | 3-4 -> D | 5-9 -> C | 10-14 -> B | 15-19 -> A | 20+ -> S
-  IF (p_level >= 20 AND p_rank <> 'S') OR
-     (p_level >= 15 AND p_level < 20 AND p_rank <> 'A') OR
-     (p_level >= 10 AND p_level < 15 AND p_rank <> 'B') OR
-     (p_level >= 5 AND p_level < 10 AND p_rank <> 'C') OR
-     (p_level >= 3 AND p_level < 5 AND p_rank <> 'D') OR
-     (p_level < 3 AND p_rank <> 'E') THEN
+  -- Faixas: 1-2 -> CANDIDATO | 3-4 -> E | 5-9 -> D | 10-14 -> C | 15-19 -> B | 20-24 -> S | 25-29 -> NACIONAL | 30-34 -> GOVERNANTE | 35+ -> MONARCA
+  IF (p_level >= 35 AND p_rank <> 'MONARCA') OR
+     (p_level >= 30 AND p_level < 35 AND p_rank <> 'GOVERNANTE') OR
+     (p_level >= 25 AND p_level < 30 AND p_rank <> 'NACIONAL') OR
+     (p_level >= 20 AND p_level < 25 AND p_rank <> 'S') OR
+     (p_level >= 15 AND p_level < 20 AND p_rank <> 'B') OR
+     (p_level >= 10 AND p_level < 15 AND p_rank <> 'C') OR
+     (p_level >= 5 AND p_level < 10 AND p_rank <> 'D') OR
+     (p_level >= 3 AND p_level < 5 AND p_rank <> 'E') OR
+     (p_level < 3 AND p_rank <> 'CANDIDATO') THEN
     RAISE EXCEPTION '[VAL_ERR_INVALID_RANK] Rank "%" inválido para o nível %.', p_rank, p_level;
   END IF;
 
@@ -144,7 +147,7 @@ CREATE POLICY "users_insert_secure" ON users
     AND level = 1
     AND xp = 0
     AND gold = 0
-    AND rank = 'E'
+    AND rank = 'CANDIDATO'
   );
 
 

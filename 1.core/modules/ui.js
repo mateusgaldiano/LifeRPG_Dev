@@ -1097,9 +1097,21 @@ function updateAvatarImage() {
     
     const rank = getRankForLevel(gameState.level);
     const rankKey = rank.css.replace('rank-', '');
-    const prefixMap = { e: '1', d: '2', c: '3', b: '4', a: '5', s: '6' };
-    const num = prefixMap[rankKey] || '1';
-    avatarEl.src = `2.assets/avatars/${folder}/${num}.rank-${rankKey}.png`;
+    
+    const avatarFileMap = {
+        candidato:  { num: '1', name: 'e' },
+        e:          { num: '1', name: 'e' },
+        d:          { num: '2', name: 'd' },
+        c:          { num: '3', name: 'c' },
+        b:          { num: '4', name: 'b' },
+        s:          { num: '6', name: 's' },
+        nacional:   { num: '6', name: 's' },
+        governante: { num: '6', name: 's' },
+        monarca:    { num: '6', name: 's' }
+    };
+    
+    const mapping = avatarFileMap[rankKey] || { num: '1', name: 'e' };
+    avatarEl.src = `2.assets/avatars/${folder}/${mapping.num}.rank-${mapping.name}.png`;
     avatarEl.onerror = () => { avatarEl.src = `2.assets/avatars/${folder}/1.rank-e.png`; };
 }
 

@@ -872,9 +872,21 @@ function initSocialSubTabs() {
 
 // Retorna o endereço correto do avatar baseado na Skin ativa e Rank
 function getPlayerAvatarSrc(activeSkin, rank, username) {
-    const rankKey = (rank || 'E').toLowerCase();
-    const prefixMap = { e: '1', d: '2', c: '3', b: '4', a: '5', s: '6' };
-    const num = prefixMap[rankKey] || '1';
+    const rankKey = (rank || 'candidato').toLowerCase();
+    
+    const avatarFileMap = {
+        candidato:  { num: '1', name: 'e' },
+        e:          { num: '1', name: 'e' },
+        d:          { num: '2', name: 'd' },
+        c:          { num: '3', name: 'c' },
+        b:          { num: '4', name: 'b' },
+        s:          { num: '6', name: 's' },
+        nacional:   { num: '6', name: 's' },
+        governante: { num: '6', name: 's' },
+        monarca:    { num: '6', name: 's' }
+    };
+    
+    const mapping = avatarFileMap[rankKey] || { num: '1', name: 'e' };
     
     let g = 'male';
     if (typeof gameState !== 'undefined') {
@@ -883,7 +895,7 @@ function getPlayerAvatarSrc(activeSkin, rank, username) {
         }
     }
     const folder = g === 'female' ? '0 - female' : '1 - male';
-    return `2.assets/avatars/${folder}/${num}.rank-${rankKey}.png`;
+    return `2.assets/avatars/${folder}/${mapping.num}.rank-${mapping.name}.png`;
 }
 
 // Inicializar ouvintes do buscador de amigos
@@ -1346,9 +1358,19 @@ async function openPlayerProfile(userId) {
         titleEl.textContent = user.active_title;
         titleEl.style.display = 'inline-block';
     } else {
-        const defaultTitles = { e: 'Recruta', d: 'Aventureiro', c: 'Caçador', b: 'Elite', a: 'Herói Lendário', s: 'O Sistema' };
-        const rKey = (user.rank || 'E').toLowerCase();
-        titleEl.textContent = defaultTitles[rKey] || 'Recruta';
+        const defaultTitles = {
+            candidato: 'Candidato',
+            e: 'Recruta',
+            d: 'Aventureiro',
+            c: 'Caçador',
+            b: 'Elite',
+            s: 'O Sistema',
+            nacional: 'Caçador Nacional',
+            governante: 'Governante',
+            monarca: 'Monarca'
+        };
+        const rKey = (user.rank || 'candidato').toLowerCase();
+        titleEl.textContent = defaultTitles[rKey] || 'Candidato';
         titleEl.style.display = 'inline-block';
     }
 

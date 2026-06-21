@@ -195,8 +195,10 @@ const BOSS_QUEST_BY_LEVEL = {
     5:  'e-to-d',
     10: 'd-to-c',
     15: 'c-to-b',
-    20: 'b-to-a',
-    30: 'a-to-s'
+    20: 'b-to-s',
+    25: 's-to-nacional',
+    30: 'nacional-to-governante',
+    35: 'governante-to-monarca'
 };
 
 
