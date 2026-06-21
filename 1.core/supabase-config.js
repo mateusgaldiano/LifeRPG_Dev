@@ -454,15 +454,15 @@ window.saveToSupabase = async function() {
   const rankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
   
   const { error } = await supabaseClient.rpc('sync_user_state_secure', {
-    p_username:    gameState.playerName,
+    p_username:    gameState.playerName || null,
     p_level:       gameState.level,
     p_xp:          gameState.xp,
     p_gold:        gameState.gold,
     p_streak:      gameState.streak,
     p_rank:        rankLetter,
-    p_archetype:   gameState.archetype,
+    p_archetype:   gameState.archetype || null,
     p_active_skin: gameState.inventory?.activeSkin || 'default',
-    p_skills:      gameState.skills,
+    p_skills:      gameState.skills || {},
     p_settings: {
       achievements: gameState.achievements || [],
       unlockedSkins: gameState.inventory?.unlockedSkins || ['default'],

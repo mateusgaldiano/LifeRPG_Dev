@@ -1,9 +1,12 @@
--- ==========================================================================
--- LifeRPG OS v2.0 — Secure RPC Validation & RLS Constraints — FASE 2
--- Execute no SQL Editor do Supabase Dashboard
--- ==========================================================================
+-- ============================================================================
+-- SQL 3 — Atualização robusta da função sync_user_state_secure
+-- Rode este script no SQL Editor do Supabase Dashboard
+-- ============================================================================
 
--- 1. CRIAR A FUNÇÃO SECURE RPC PARA SINCRONIZAÇÃO DE USUÁRIO
+-- 1. Dropar qualquer versão anterior da função para garantir que não haja conflitos de assinaturas
+DROP FUNCTION IF EXISTS sync_user_state_secure(TEXT, INT, INT, INT, INT, TEXT, TEXT, TEXT, JSONB, JSONB);
+
+-- 2. Recriar a função com parâmetros robustos (defaults) e COALESCE nos campos opcionais/not-null
 CREATE OR REPLACE FUNCTION sync_user_state_secure(
   p_username TEXT DEFAULT NULL,
   p_level INT DEFAULT 1,
@@ -38,8 +41,8 @@ BEGIN
   END IF;
 
   -- ── VALIDAÇÃO 1: SANITIZAÇÃO E VALIDAÇÃO DE USERNAME
-  -- Permite letras, números, acentuação padrão PT-BR, espaço, hífen e underline
-  IF length(p_username) > 30 OR p_username !~ '^[a-zA-Z0-9 _áéíóúâêîôûãõçÁÉÍÓÚÂÊÎÔÛÃÕÇ-]+$' THEN
+  -- Se p_username for nulo, pulamos a validação (o COALESCE manterá o nome existente)
+  IF p_username IS NOT NULL AND (length(p_username) > 30 OR p_username !~ '^[a-zA-Z0-9 _áéíóúâêîôûãõçÁÉÍÓÚÂÊÎÔÛÃÕÇ-]+$') THEN
     RAISE EXCEPTION '[VAL_ERR_INVALID_USERNAME] Username inválido. Deve ter no máximo 30 caracteres e conter apenas letras, números e caracteres especiais básicos.';
   END IF;
 
@@ -54,11 +57,6 @@ BEGIN
     RAISE EXCEPTION '[VAL_ERR_XP_OVERFLOW] XP enviado (%) é maior ou igual ao limite de subida (%) para o nível %.', p_xp, v_xp_needed, p_level;
   END IF;
 
-  -- ── VALIDAÇÃO 4: REGRESSÃO DE STREAK (Só permite aumentar ou resetar para 0)
-  IF p_streak < v_current_streak AND p_streak <> 0 THEN
-    RAISE EXCEPTION '[VAL_ERR_STREAK_REGRESSION] Streak só pode aumentar ou resetar para 0. Atual: %, Enviado: %', v_current_streak, p_streak;
-  END IF;
-
   -- ── VALIDAÇÃO 5: VALORES NEGATIVOS
   IF p_gold < 0 THEN
     RAISE EXCEPTION '[VAL_ERR_NEGATIVE_GOLD] Ouro não pode ser negativo.';
@@ -68,17 +66,20 @@ BEGIN
   END IF;
 
   -- ── VALIDAÇÃO 6: CONSISTÊNCIA DE RANK OBRIGATÓRIA POR FAIXA
-  -- Faixas: 1-2 -> E | 3-4 -> D | 5-9 -> C | 10-14 -> B | 15-19 -> A | 20+ -> S
-  IF (p_level >= 20 AND p_rank <> 'S') OR
-     (p_level >= 15 AND p_level < 20 AND p_rank <> 'A') OR
-     (p_level >= 10 AND p_level < 15 AND p_rank <> 'B') OR
-     (p_level >= 5 AND p_level < 10 AND p_rank <> 'C') OR
-     (p_level >= 3 AND p_level < 5 AND p_rank <> 'D') OR
-     (p_level < 3 AND p_rank <> 'E') THEN
+  -- Faixas: 1-2 -> CANDIDATO | 3-4 -> E | 5-9 -> D | 10-14 -> C | 15-19 -> B | 20-24 -> S | 25-29 -> NACIONAL | 30-34 -> GOVERNANTE | 35+ -> MONARCA
+  IF (p_level >= 35 AND p_rank <> 'MONARCA') OR
+     (p_level >= 30 AND p_level < 35 AND p_rank <> 'GOVERNANTE') OR
+     (p_level >= 25 AND p_level < 30 AND p_rank <> 'NACIONAL') OR
+     (p_level >= 20 AND p_level < 25 AND p_rank <> 'S') OR
+     (p_level >= 15 AND p_level < 20 AND p_rank <> 'B') OR
+     (p_level >= 10 AND p_level < 15 AND p_rank <> 'C') OR
+     (p_level >= 5 AND p_level < 10 AND p_rank <> 'D') OR
+     (p_level >= 3 AND p_level < 5 AND p_rank <> 'E') OR
+     (p_level < 3 AND p_rank <> 'CANDIDATO') THEN
     RAISE EXCEPTION '[VAL_ERR_INVALID_RANK] Rank "%" inválido para o nível %.', p_rank, p_level;
   END IF;
 
-  -- ── VALIDAÇÃO 7: LIMITE FIXO DE GANHO DE RECURSOS (MÁX +2000 GOLD E +2000 XP)
+  -- ── VALIDAÇÃO 7: LIMITE FIXO DE GANHO DE RECURSOS (MÁX +2.000 GOLD E +2.000 XP)
   
   -- A. Validação de Ganho de Ouro (Máximo de +2.000 Ouro por sync)
   IF (p_gold - v_current_gold) > 2000 THEN
@@ -102,7 +103,7 @@ BEGIN
     RAISE EXCEPTION '[VAL_ERR_XP_LIMIT_EXCEEDED] Ganho de XP (%) excede o limite fixo de 2000 por sync.', (v_xp_total_new - v_xp_total_old);
   END IF;
 
-  -- 8. ATUALIZAÇÃO SEGURA NO BANCO (SECURITY DEFINER ignora a falta de RLS de UPDATE)
+  -- 3. Atualização no banco (SECURITY DEFINER ignora a falta de RLS de UPDATE)
   UPDATE users
   SET
     username = COALESCE(p_username, username),
@@ -121,43 +122,5 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-
--- 2. RECONFIGURAR ROW LEVEL SECURITY (RLS) NA TABELA USERS
--- Remover a política genérica antiga que permitia UPDATE direto do cliente
-DROP POLICY IF EXISTS "users_own_data" ON users;
-
--- Criar a política de leitura (SELECT) própria
-CREATE POLICY "users_select_own" ON users
-  FOR SELECT USING (auth.uid() = person_id);
-
--- Criar a política de inserção (INSERT) com restrições rígidas
-CREATE POLICY "users_insert_secure" ON users
-  FOR INSERT WITH CHECK (
-    auth.uid() = person_id
-    AND level = 1
-    AND xp = 0
-    AND gold = 0
-    AND rank = 'E'
-  );
-
-
--- 3. ADICIONAR CHECK CONSTRAINTS DE SEGURANÇA E INTEGRIDADE
--- Validações a nível de banco para garantir valores sãos
-ALTER TABLE users DROP CONSTRAINT IF EXISTS check_user_level;
-ALTER TABLE users ADD CONSTRAINT check_user_level CHECK (level >= 1 AND level <= 100);
-
-ALTER TABLE users DROP CONSTRAINT IF EXISTS check_user_gold;
-ALTER TABLE users ADD CONSTRAINT check_user_gold CHECK (gold >= 0);
-
-ALTER TABLE users DROP CONSTRAINT IF EXISTS check_user_xp;
-ALTER TABLE users ADD CONSTRAINT check_user_xp CHECK (xp >= 0);
-
-ALTER TABLE users DROP CONSTRAINT IF EXISTS check_user_streak;
-ALTER TABLE users ADD CONSTRAINT check_user_streak CHECK (streak >= 0);
-
--- Limites de recompensa por quest na tabela quests
-ALTER TABLE quests DROP CONSTRAINT IF EXISTS check_quest_gold_limit;
-ALTER TABLE quests ADD CONSTRAINT check_quest_gold_limit CHECK (gold <= 500);
-
-ALTER TABLE quests DROP CONSTRAINT IF EXISTS check_quest_xp_limit;
-ALTER TABLE quests ADD CONSTRAINT check_quest_xp_limit CHECK (xp <= 500);
+-- 4. Notificar o PostgREST para recarregar o schema cache imediatamente
+NOTIFY pgrst, 'reload schema';

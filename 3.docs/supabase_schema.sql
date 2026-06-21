@@ -241,16 +241,16 @@ ALTER TABLE quests ADD CONSTRAINT check_quest_xp_limit CHECK (xp <= 500);
 -- RPC FUNCTIONS — Funções Seguras do Sistema (Security Definer)
 -- ================================================================
 CREATE OR REPLACE FUNCTION sync_user_state_secure(
-  p_username TEXT,
-  p_level INT,
-  p_xp INT,
-  p_gold INT,
-  p_streak INT,
-  p_rank TEXT,
-  p_archetype TEXT,
-  p_active_skin TEXT,
-  p_skills JSONB,
-  p_settings JSONB
+  p_username TEXT DEFAULT NULL,
+  p_level INT DEFAULT 1,
+  p_xp INT DEFAULT 0,
+  p_gold INT DEFAULT 0,
+  p_streak INT DEFAULT 0,
+  p_rank TEXT DEFAULT 'CANDIDATO',
+  p_archetype TEXT DEFAULT NULL,
+  p_active_skin TEXT DEFAULT 'default',
+  p_skills JSONB DEFAULT '{}'::jsonb,
+  p_settings JSONB DEFAULT '{}'::jsonb
 ) RETURNS VOID AS $$
 DECLARE
   v_current_level INT;
@@ -318,13 +318,13 @@ BEGIN
   -- 5. ATUALIZAÇÃO SEGURA NO BANCO (SECURITY DEFINER ignora a falta de RLS de UPDATE)
   UPDATE users
   SET
-    username = p_username,
+    username = COALESCE(p_username, username),
     level = p_level,
     xp = p_xp,
     gold = p_gold,
     streak = p_streak,
     rank = p_rank,
-    archetype = p_archetype,
+    archetype = COALESCE(p_archetype, archetype),
     active_skin = p_active_skin,
     skills = p_skills,
     settings = p_settings,
