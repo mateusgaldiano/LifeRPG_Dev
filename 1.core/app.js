@@ -283,7 +283,23 @@ window.unsubscribeUserFromPush = unsubscribeUserFromPush;
 
 // bootstrapping
 document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Carrega dados locais do jogo
     loadGameData();
+
+    // 2. Inicialização do Supabase e sincronização da Nuvem ANTES de renderizar a UI ou relatórios
+    let isReturningUser = false;
+    let tutorialCompleted = false;
+    if (typeof window.initSupabase === 'function') {
+        try {
+            const status = await window.initSupabase();
+            isReturningUser = status.isReturningUser;
+            tutorialCompleted = status.tutorialCompleted;
+        } catch (e) {
+            console.error('[App Bootstrap] Erro ao inicializar Supabase:', e);
+        }
+    }
+
+    // 3. Inicializa abas e renderiza a UI (com dados reais sincronizados)
     initTabs();
     renderQuests();
     renderRewards();
@@ -340,19 +356,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             setTimeout(() => {
                 showSystemToast(`🌅 *BOM RETORNO, ${gameState.playerName.toUpperCase()}!*\n\nO Sistema identificou sua consistência ontem (${yesterdayStats.count}/${yesterdayStats.total} tarefas). Continue focado hoje!`);
             }, 3000);
-        }
-    }
-    
-    // Inicialização assíncrona do Supabase
-    let isReturningUser = false;
-    let tutorialCompleted = false;
-    if (typeof window.initSupabase === 'function') {
-        try {
-            const status = await window.initSupabase();
-            isReturningUser = status.isReturningUser;
-            tutorialCompleted = status.tutorialCompleted;
-        } catch (e) {
-            console.error('[App Bootstrap] Erro ao inicializar Supabase:', e);
         }
     }
 

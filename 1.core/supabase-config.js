@@ -423,6 +423,16 @@ window.syncFromCloud = async function() {
 window.saveToSupabase = async function() {
   if (!window._currentUserDbId) return;
 
+  const isDefaultState = gameState.level <= 1
+      && gameState.xp === 0
+      && gameState.gold === 0
+      && (gameState.quests || []).length === 0;
+
+  if (isDefaultState) {
+      console.warn('[Sync] Estado padrão detectado — sync abortado');
+      return;
+  }
+
   const rankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
   
   const { error } = await supabaseClient.rpc('sync_user_state_secure', {

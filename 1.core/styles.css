@@ -80,7 +80,7 @@
 
 /* â”€â”€ RESET â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { height: 100%; }
+html { height: 100%; overscroll-behavior-y: contain; }
 
 :focus-visible {
     outline: 3px solid var(--text-blue);
@@ -118,6 +118,7 @@ body {
     align-items: center;
     overflow-x: hidden;
     position: relative;
+    overscroll-behavior-y: contain;
     -webkit-font-smoothing: antialiased;
     padding: 16px;
 }
