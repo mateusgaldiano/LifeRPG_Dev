@@ -286,7 +286,7 @@ async function ensureUserProfile(authUser) {
     // ── PASSO 2: Verificar/criar em users ────────────────────────────────
     const { data: userRow, error: userSelectError } = await supabaseClient
       .from('users')
-      .select('id, settings')
+      .select('id, username, settings')
       .eq('person_id', authUser.id)
       .maybeSingle();
 
@@ -299,11 +299,12 @@ async function ensureUserProfile(authUser) {
       tutorialCompleted = gameState.tutorialCompleted || false;
       // PRIMEIRO LOGIN — fazer upload do progresso local atual
       const rankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
+      const tempUsername = `Jogador_${authUser.id.slice(0, 8)}`;
       const { data: newUser, error: userInsertError } = await supabaseClient
         .from('users')
         .upsert({
           person_id:      authUser.id,
-          username:       gameState.playerName || authUser.email,
+          username:       (gameState.playerName && !gameState.playerName.includes('@')) ? gameState.playerName : tempUsername,
           avatar_url:     authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
           level:          gameState.level,
           xp:             gameState.xp,
@@ -321,7 +322,7 @@ async function ensureUserProfile(authUser) {
           },
           last_active_at: new Date().toISOString(),
         }, { onConflict: 'person_id' })
-        .select('id')
+        .select('id, username')
         .maybeSingle();
 
       if (userInsertError || !newUser) {
@@ -334,6 +335,7 @@ async function ensureUserProfile(authUser) {
 
       console.log('[Supabase] User criado com sucesso:', newUser.id);
       window._currentUserDbId = newUser.id;
+      window._currentUsername = newUser.username;
 
       // Upload de quests e history existentes localmente
       await syncQuestsToSupabase();
@@ -344,6 +346,12 @@ async function ensureUserProfile(authUser) {
       isReturningUser = true;
       tutorialCompleted = userRow.settings?.tutorialCompleted ?? false;
       window._currentUserDbId = userRow.id;
+      window._currentUsername = userRow.username;
+      
+      const cleanDbUsername = userRow.username && !userRow.username.includes('@') ? userRow.username : null;
+      if (!gameState.playerName && cleanDbUsername) {
+        gameState.playerName = cleanDbUsername;
+      }
       console.log('[Supabase] User existente carregado:', userRow.id);
     }
 
@@ -389,7 +397,10 @@ window.syncFromCloud = async function() {
     gameState.streak    = cloudUser.streak;
     gameState.archetype = cloudUser.archetype;
     gameState.skills    = cloudUser.skills;
-    gameState.playerName = cloudUser.username;
+    
+    const cleanDbUsername = cloudUser.username && !cloudUser.username.includes('@') ? cloudUser.username : null;
+    gameState.playerName = cleanDbUsername || gameState.playerName;
+    window._currentUsername = cloudUser.username;
 
     gameState.achievements = cloudUser.settings?.achievements || [];
     gameState.tutorialCompleted = cloudUser.settings?.tutorialCompleted ?? false;
@@ -453,8 +464,11 @@ window.saveToSupabase = async function() {
 
   const rankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
   
+  const cleanUsername = (name) => name && !name.includes('@') ? name : null;
+  const usernameToSync = cleanUsername(gameState.playerName) || cleanUsername(window._currentUsername) || null;
+
   const { error } = await supabaseClient.rpc('sync_user_state_secure', {
-    p_username:    gameState.playerName || null,
+    p_username:    usernameToSync,
     p_level:       gameState.level,
     p_xp:          gameState.xp,
     p_gold:        gameState.gold,
