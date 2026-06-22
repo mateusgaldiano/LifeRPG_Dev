@@ -715,11 +715,13 @@ window.loadQuestsFromSupabase = async function() {
           }
           return 5;
         })(),
-        current: (q.local_id?.includes('agua') || q.title?.toLowerCase().includes('água') || q.title?.toLowerCase().includes('agua') || q.emoji === '💧')
+        // Contador de copos: só ativo quando target > 1 está salvo no banco
+        // (ex: 'Beber 2 litros' tem target=8; 'Beber 1 copo ao acordar' tem target=null → checkbox simples)
+        current: (q.target !== null && q.target !== undefined && q.target > 1)
           ? (q.current !== null && q.current !== undefined ? q.current : 0)
           : undefined,
-        target: (q.local_id?.includes('agua') || q.title?.toLowerCase().includes('água') || q.title?.toLowerCase().includes('agua') || q.emoji === '💧')
-          ? (q.target !== null && q.target !== undefined ? q.target : 8)
+        target: (q.target !== null && q.target !== undefined && q.target > 1)
+          ? q.target
           : undefined,
       };
     });
