@@ -142,7 +142,8 @@ import {
     setupSettingsListeners,
     loadSettingsToUI,
     subscribeUserToPush,
-    unsubscribeUserFromPush
+    unsubscribeUserFromPush,
+    setupPullToRefresh
 } from './modules/pwa.js';
 
 // Bind State
@@ -347,6 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof setupSocialModalListeners === 'function') setupSocialModalListeners();
     setupInstallPrompt();
     setupHabitLibraryAndTabs();
+    setupPullToRefresh(); // arrastar = sincronizar quando logado
 
     // Listeners do Ranking (BUG-005) e das sub-abas de Sala de Troféus/Ranking
     const btnRankGlobal = document.getElementById('btn-ranking-global');

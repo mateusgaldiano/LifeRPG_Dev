@@ -447,6 +447,79 @@ async function unsubscribeUserFromPush() {
     }
 };
 
+// ==========================================================================
+// PULL-TO-REFRESH — sincroniza com a nuvem ao arrastar (quando logado)
+// ==========================================================================
+function setupPullToRefresh() {
+    let startY = 0;
+    let pulling = false;
+    let indicator = null;
+
+    function getIndicator() {
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'ptr-indicator';
+            indicator.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0;
+                display: flex; align-items: center; justify-content: center;
+                height: 0; overflow: hidden;
+                background: linear-gradient(135deg, #6c63ff, #4fc3f7);
+                color: #fff; font-size: 13px; font-weight: 600;
+                letter-spacing: 0.5px; z-index: 9999;
+                transition: height 0.15s ease;
+            `;
+            indicator.innerHTML = '☁️ Solte para sincronizar';
+            document.body.prepend(indicator);
+        }
+        return indicator;
+    }
+
+    document.addEventListener('touchstart', (e) => {
+        if (window.scrollY === 0) {
+            startY = e.touches[0].clientY;
+            pulling = true;
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+        if (!pulling) return;
+        const dist = e.touches[0].clientY - startY;
+        if (dist > 10 && window.scrollY === 0) {
+            const height = Math.min(dist * 0.4, 56);
+            getIndicator().style.height = height + 'px';
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchend', async (e) => {
+        if (!pulling) return;
+        pulling = false;
+        const ind = getIndicator();
+        const dist = e.changedTouches[0].clientY - startY;
+
+        if (dist > 70) {
+            // Logado → sincronizar com a nuvem
+            if (window._currentUserDbId && typeof window.forceLoadFromCloud === 'function') {
+                ind.innerHTML = '☁️ Sincronizando...';
+                ind.style.height = '44px';
+                try {
+                    await window.forceLoadFromCloud();
+                    ind.innerHTML = '✅ Sincronizado!';
+                    showSystemToast('☁️ Dados sincronizados com a nuvem.');
+                } catch (err) {
+                    ind.innerHTML = '❌ Erro ao sincronizar';
+                }
+            } else {
+                // Não logado → recarregar normalmente
+                ind.innerHTML = '🔄 Recarregando...';
+                ind.style.height = '44px';
+                setTimeout(() => window.location.reload(), 200);
+            }
+            setTimeout(() => { ind.style.height = '0'; }, 1200);
+        } else {
+            ind.style.height = '0';
+        }
+    });
+}
 
 
 export {
@@ -455,5 +528,6 @@ export {
     setupSettingsListeners,
     loadSettingsToUI,
     subscribeUserToPush,
-    unsubscribeUserFromPush
+    unsubscribeUserFromPush,
+    setupPullToRefresh
 };
