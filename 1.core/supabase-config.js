@@ -256,7 +256,7 @@ async function ensureUserProfile(authUser) {
     // ── PASSO 1: Verificar/criar em persons ──────────────────────────────
     const { data: person, error: personSelectError } = await supabaseClient
       .from('persons')
-      .select('id')
+      .select('id, email, name, username')
       .eq('id', authUser.id)
       .maybeSingle();
 
@@ -268,9 +268,10 @@ async function ensureUserProfile(authUser) {
       const { error: personInsertError } = await supabaseClient
         .from('persons')
         .upsert({
-          id:    authUser.id,
-          email: authUser.email,
-          name:  authUser.user_metadata?.full_name || authUser.email,
+          id:       authUser.id,
+          email:    authUser.email,
+          name:     authUser.user_metadata?.full_name || authUser.email,
+          username: gameState.playerName || authUser.email,
         }, { onConflict: 'id' });
 
       if (personInsertError) {
@@ -297,14 +298,18 @@ async function ensureUserProfile(authUser) {
     if (!userRow) {
       isReturningUser = false;
       tutorialCompleted = gameState.tutorialCompleted || false;
-      // PRIMEIRO LOGIN — fazer upload do progresso local atual
+      // PRIMEIRO LOGIN ou recriação pós-reset — fazer upload do progresso local atual
       const rankLetter = getRankForLevel(gameState.level).css.replace('rank-', '').toUpperCase();
       const tempUsername = `Jogador_${authUser.id.slice(0, 8)}`;
+      // Recupera username salvo em persons (preservado mesmo após hard reset)
+      const savedPersonUsername = person?.username && !person.username.includes('@') ? person.username : null;
+      const resolvedUsername = savedPersonUsername
+        || ((gameState.playerName && !gameState.playerName.includes('@')) ? gameState.playerName : tempUsername);
       const { data: newUser, error: userInsertError } = await supabaseClient
         .from('users')
         .upsert({
           person_id:      authUser.id,
-          username:       (gameState.playerName && !gameState.playerName.includes('@')) ? gameState.playerName : tempUsername,
+          username:       resolvedUsername,
           avatar_url:     authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
           level:          gameState.level,
           xp:             gameState.xp,

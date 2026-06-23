@@ -1463,10 +1463,26 @@ function setupEventListeners() {
     document.getElementById('quests-list-intellect')?.addEventListener('click', handleQuestAction);
     document.getElementById('quests-list-health')?.addEventListener('click', handleQuestAction);
 
-    // Inject App Version on settings open
-    document.getElementById('btn-open-settings')?.addEventListener('click', () => {
+    // Inject App Version + Persons data on settings open
+    document.getElementById('btn-open-settings')?.addEventListener('click', async () => {
         const lbl = document.getElementById('app-version-label');
         if (lbl) lbl.textContent = APP_VERSION;
+
+        const personsGroup = document.getElementById('settings-group-persons');
+        if (!personsGroup || !window._currentUserDbId) return;
+
+        const { data: person } = await window.supabaseClient
+            .from('persons')
+            .select('email, name, username')
+            .eq('id', (await window.supabaseClient.auth.getUser()).data?.user?.id)
+            .maybeSingle();
+
+        if (person) {
+            document.getElementById('person-email').textContent    = person.email    || '—';
+            document.getElementById('person-name').textContent     = person.name     || '—';
+            document.getElementById('person-username').textContent = person.username || '—';
+            personsGroup.style.display = '';
+        }
     });
 
     // Taverna
