@@ -1,50 +1,19 @@
 # LifeRPG OS — Pipeline de Pendências
-**Gerado em: 20/06/2026 | Auditoria completa pós-leitura do Drive**
-**Repo Dev:** `https://mateusgaldiano.github.io/LifeRPG_Dev/`
-**Local:** `C:\Users\mateu\.gemini\antigravity\scratch\liferpg`
-**Supabase:** `https://ppsqvppnunzagxqruoqf.supabase.co`
+
+> **Sincronizado automaticamente com `pipeline.html`.** Não editar à mão — editar o array `items` no HTML e ressincronizar.
+> **Total: 37 itens pendentes.**
 
 ---
 
-## ⚠️ CONTEXTO PARA O EXECUTOR
-
-- O projeto foi migrado para **ES Modules**. Entry point: `1.core/app.js`. Módulos em `1.core/modules/`: `state.js`, `utils.js`, `ui.js`, `game-logic.js`, `weekly-report.js`, `social.js`, `pwa.js` + `report-worker.js`
-- `supabase-config.js` permanece **script clássico** (não é ES Module)
-- Funções expostas globalmente no HTML (onclick) devem ser migradas para listeners ou explicitamente expostas in `window.*`
-- Sempre testar no Dev antes do Prod
-- Patches cirúrgicos via search/replace — nunca reescrever arquivo inteiro
-- Commits descritivos: `fix:` / `feat:` / `refactor:` / `chore:`
-
----
-
-## 🔴 P0 — CRÍTICO (Resolver esta semana)
-
----
-
-### BUG-001 · `ensureUserProfile` 403/409 no primeiro login OAuth
-**Cluster:** Bug Crítico | **Esforço:** M | **Arquivo:** `1.core/modules/state.js`
-
-Bloqueia: chip de grupo, notificações push e validação de cloud sync. Causa provável: race condition entre INSERT em `persons` e `users` no primeiro OAuth — o perfil ainda não existe quando a segunda inserção é tentada.
-
-```
-1. Abrir `1.core/modules/state.js` e localizar a função `ensureUserProfile`
-2. Substituir INSERT direto em `persons` por UPSERT: usar `.upsert({...}, { onConflict: 'id' })`
-3. Substituir INSERT direto em `users` por UPSERT: usar `.upsert({...}, { onConflict: 'user_id' })`
-4. Remover qualquer chamada `.single()` que possa lançar erro 406 — substituir por `.maybeSingle()`
-5. Envolver toda a função em try/catch com logging: `console.error('[ensureUserProfile]', err)`
-6. Testar no Dev: fazer logout, limpar cookies, fazer login Google pela primeira vez
-7. Confirmar que o chip de grupo aparece após login bem-sucedido
-8. Commit: "fix: ensureUserProfile upsert para evitar 403/409 no primeiro OAuth"
-```
-
----
+## 🔴 P0 — CRÍTICO (3)
 
 ### BUG-002 · Mensagens do chat global não aparecem ao enviar
-**Cluster:** Bug Crítico | **Esforço:** S | **Arquivo:** `1.core/modules/social.js`
+**Cluster:** Bug Crítico | **Esforço:** S | **Tipo:** Bug | **Fase:** Agora
 
 Usuário envia mensagem, ela não aparece no canal. Provável causa: falta de subscription ativa no canal Realtime ou RLS bloqueando SELECT na tabela de chat.
 
 ```
+Ver 1.core/modules/social.js.
 1. Abrir `1.core/modules/social.js` e localizar a função de envio de mensagem do chat global
 2. Verificar se existe subscription ativa no canal Realtime de chat (procurar por `.channel(` ou `.on('postgres_changes'`)
 3. Se subscription não existir: criar `supabase.channel('global-chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'global_chat' }, callback).subscribe()`
@@ -54,51 +23,13 @@ Usuário envia mensagem, ela não aparece no canal. Provável causa: falta de su
 7. Commit: "fix: subscription Realtime no chat global + RLS policy de SELECT"
 ```
 
----
-
-### BUG-003 · PWA manifest `start_url` scope mismatch → 404 ao abrir app instalado
-**Cluster:** Bug Crítico | **Esforço:** XS | **Arquivo:** `1.core/manifest.json`
-
-App instalado abre em 404 porque `start_url` não bate com `scope` do manifest.
-
-```
-1. Abrir `1.core/manifest.json`
-2. Verificar o valor atual de `start_url` e `scope`
-3. Para o repo Dev (GitHub Pages): definir `"start_url": "/LifeRPG_Dev/"` e `"scope": "/LifeRPG_Dev/"`
-4. Para o repo Prod: definir `"start_url": "/LifeRPG/"` e `"scope": "/LifeRPG/"`
-5. Confirmar que o `sw.js` registra o scope correto (procurar `navigator.serviceWorker.register`)
-6. Fazer uninstall do PWA no celular, reabrir no browser, reinstalar
-7. Confirmar que não há 404 ao abrir
-8. Commit: "fix: manifest start_url e scope para corrigir 404 no PWA instalado"
-```
-
----
-
-### SEG-001 · VAPID private key comprometida — gerar novo par
-**Cluster:** Segurança | **Esforço:** XS
-
-Chave privada apareceu em documento. Notificações push completamente não funcionais.
-
-```
-1. No terminal local, instalar web-push se necessário: `npm install -g web-push`
-2. Gerar novo par: `web-push generate-vapid-keys`
-3. Copiar a PUBLIC KEY para `1.core/pwa.js` (substituir a constante VAPID_PUBLIC_KEY existente)
-4. Acessar Supabase Dashboard → Edge Functions → Secrets
-5. Atualizar (ou criar) o secret `VAPID_PRIVATE_KEY` com o novo valor
-6. NUNCA colocar a private key em nenhum arquivo do projeto — apenas em Secrets
-7. Atualizar também o secret `VAPID_SUBJECT` se ausente (ex: `mailto:mateusgaldiano@gmail.com`)
-8. Testar subscription de push no Dev após correção do BUG-001
-9. Commit: "fix: atualizar VAPID public key — par comprometido revogado"
-```
-
----
-
 ### UX-001 · Settings modal muito denso — fontes pequenas (feedback confirmado)
-**Cluster:** UX/Visual | **Esforço:** M | **Arquivo:** `1.core/styles.css`
+**Cluster:** UX/Visual | **Esforço:** M | **Tipo:** Enhancement | **Fase:** Agora
 
 Modal de configurações identificado como inacessível. Escalonamento de fontes pendente.
 
 ```
+Ver 1.core/styles.css.
 1. Abrir `1.core/styles.css`
 2. Localizar `body` e ajustar: `font-size: 15px; line-height: 1.5;`
 3. Localizar `.quest-title` e ajustar: `font-size: 15px;`
@@ -116,10 +47,8 @@ Modal de configurações identificado como inacessível. Escalonamento de fontes
 15. Commit: "feat: escalonamento de fontes e simplificação do modal Settings"
 ```
 
----
-
 ### SEG-002 · Verificar RLS em todas as tabelas Supabase
-**Cluster:** Segurança | **Esforço:** S
+**Cluster:** Segurança | **Esforço:** S | **Tipo:** Segurança | **Fase:** Agora
 
 Confirmar que persons, users, inventory, pvp_duels, friendships, global_chat têm RLS ativo.
 
@@ -134,142 +63,13 @@ Confirmar que persons, users, inventory, pvp_duels, friendships, global_chat tê
 8. Commit: "chore: habilitar RLS em todas as tabelas do schema public"
 ```
 
----
-
-### BUG-004 · pg_cron para `check_and_finalize_duels` — confirmação pendente
-**Cluster:** Bug Crítico | **Esforço:** XS | **Banco:** Supabase SQL
-
-Duelos PvP podem nunca ser finalizados se o cron não foi criado.
-
-```
-1. Acessar Supabase Dashboard → SQL Editor
-2. Executar: SELECT * FROM cron.job;
-3. Se não existir job para check_and_finalize_duels: criar com
-   SELECT cron.schedule('check-duels', '0 */6 * * *', $$SELECT check_and_finalize_duels();$$);
-4. Confirmar que a função `check_and_finalize_duels` existe: SELECT proname FROM pg_proc WHERE proname = 'check_and_finalize_duels';
-5. Se função não existir: criar conforme RPC já planejada (verificar 3.docs/ para spec)
-6. Testar executando manualmente: SELECT check_and_finalize_duels();
-7. Commit: "fix: criar pg_cron job para finalização automática de duelos PvP"
-```
-
----
-
-### TECH-001 · `CLAUDE.md` desatualizado — reescrever seção Firebase → Supabase
-**Cluster:** Bug Crítico | **Esforço:** S | **Arquivo:** `CLAUDE.md` (na raiz ou 1.core/)
-
-Executor pode confundir arquivos Firebase inexistentes com os arquivos Supabase atuais.
-
-```
-1. Abrir CLAUDE.md no projeto local
-2. Localizar a seção 6 (ou qualquer seção que mencione Firebase, firebase-config.js, Firestore)
-3. Substituir todas as referências Firebase por equivalentes Supabase:
-   - firebase-config.js → 1.core/supabase-config.js
-   - Firestore → Supabase (tabelas: persons, users, quests, history, items, inventory, analytics_events)
-   - Firebase Auth → Supabase Auth (OAuth Google)
-   - Firebase Functions → Supabase Edge Functions
-4. Atualizar estrutura de módulos ES: listar state.js, utils.js, ui.js, game-logic.js, social.js, pwa.js, weekly-report.js, report-worker.js
-5. Atualizar a seção de bugs conhecidos com os itens P0 desta pipeline
-6. Commit ao Drive e ao repositório: "chore: atualizar CLAUDE.md — remover Firebase, documentar Supabase + ES Modules"
-```
-
----
-
-### BUG-005 · `switchRankingMode` e `switchTavernaTab` chamados inline no HTML
-**Cluster:** Bug Crítico | **Esforço:** S | **Arquivos:** `index.html`, `1.core/app.js`
-
-Funções chamadas via onclick no HTML mas definidas em módulos ES — podem não estar em `window`.
-
-```
-1. Abrir index.html e buscar todos os atributos onclick="switchRankingMode" e onclick="switchTavernaTab"
-2. Remover os atributos onclick do HTML
-3. Abrir 1.core/app.js (entry point)
-4. Após os imports, adicionar event listeners para os botões correspondentes:
-   document.getElementById('btn-ranking-global').addEventListener('click', () => switchRankingMode('global'));
-   document.getElementById('btn-ranking-friends').addEventListener('click', () => switchRankingMode('friends'));
-   document.getElementById('subtab-btn-shop').addEventListener('click', () => switchTavernaTab('shop'));
-   document.getElementById('subtab-btn-inventory').addEventListener('click', () => switchTavernaTab('inventory'));
-5. Confirmar que switchRankingMode está exportada de social.js e importada no app.js
-6. Confirmar que switchTavernaTab está exportada de ui.js e importada no app.js
-7. Testar clique nas abas do Ranking e Taverna no Dev
-8. Commit: "fix: migrar onclick inline de switchRankingMode/switchTavernaTab para event listeners ES Module"
-```
-
----
-
-### MKT-001 · `og:image` e meta tags de compartilhamento ausentes no HTML
-**Cluster:** Marketing | **Esforço:** XS | **Arquivo:** `index.html`
-
-Links compartilhados no WhatsApp/Twitter aparecem sem preview. 5 minutos de trabalho.
-
-```
-1. Abrir index.html, localizar o bloco <head>
-2. Adicionar após as meta tags existentes:
-   <meta property="og:title" content="LifeRPG OS — The System">
-   <meta property="og:description" content="Transforme seus hábitos em missões. Sistema de gamificação Solo Leveling-inspired para vida real.">
-   <meta property="og:image" content="https://mateusgaldiano.github.io/LifeRPG_Dev/2.assets/og-preview.png">
-   <meta property="og:url" content="https://mateusgaldiano.github.io/LifeRPG_Dev/">
-   <meta property="og:type" content="website">
-   <meta name="twitter:card" content="summary_large_image">
-   <meta name="twitter:title" content="LifeRPG OS — The System">
-   <meta name="twitter:image" content="https://mateusgaldiano.github.io/LifeRPG_Dev/2.assets/og-preview.png">
-3. Criar imagem 1200x630px com identidade visual do app e salvar em 2.assets/og-preview.png
-4. Commit: "feat: adicionar meta tags og e twitter card para preview de compartilhamento"
-```
-
----
-
-## 🟡 P1 — ALTO (Próximas 2 semanas)
-
----
-
-### BUG-006 · 16 chamadas `trackEvent` sem implementação funcional
-**Cluster:** Bug Crítico | **Esforço:** M | **Arquivo:** `1.core/modules/utils.js`
-
-Analytics completamente cegas. Todas as chamadas existentes no código disparam no vazio.
-
-```
-1. Abrir 1.core/modules/utils.js
-2. Criar e exportar a função trackEvent:
-   export async function trackEvent(eventName, properties = {}) {
-     try {
-       const user = window._currentUserDbId;
-       if (!user || !window.supabase) return;
-       await window.supabase.from('analytics_events').insert({
-         user_id: user,
-         event_name: eventName,
-         properties: properties,
-         created_at: new Date().toISOString()
-       });
-     } catch(e) { console.warn('[trackEvent]', e); }
-   }
-3. Confirmar que a tabela analytics_events existe no Supabase com colunas: id, user_id, event_name, properties (jsonb), created_at
-4. Se tabela não existir: CREATE TABLE analytics_events (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid REFERENCES auth.users(id), event_name text NOT NULL, properties jsonb DEFAULT '{}', created_at timestamptz DEFAULT now());
-5. Buscar todas as 16 ocorrências de trackEvent( no projeto e confirmar que window.trackEvent está importado/exposto
-6. Priorizar eventos: quest_completed, buff_purchased, level_up, daily_penalty, onboarding_complete
-7. Commit: "feat: implementar trackEvent com insert em analytics_events no Supabase"
-```
-
----
-
-### BUG-007 · Group multiplier chip oculto — remover `display:none !important` após BUG-001
-**Cluster:** Bug Crítico | **Esforço:** XS | **Dependência:** BUG-001 resolvido
-
-```
-1. Após confirmar que BUG-001 (ensureUserProfile) está resolvido e perfil é criado corretamente
-2. Abrir index.html e localizar o elemento #group-multiplier-chip
-3. Remover o atributo style="display: none !important;" do HTML
-4. Em state.js ou ui.js, localizar a função que controla visibilidade do chip de grupo
-5. Confirmar que friendsCount bidirecional está calculando corretamente (amizades onde user_id = eu OU friend_id = eu)
-6. Testar: adicionar amigo e confirmar que chip aparece com multiplicador correto
-7. Commit: "fix: exibir group multiplier chip após correção do ensureUserProfile"
-```
-
----
+## 🟡 P1 — ALTO (20)
 
 ### PWA-001 · iOS Safari: virtual keyboard empurra chat UI
-**Cluster:** Mobile & PWA | **Esforço:** M | **Arquivo:** `1.core/modules/social.js`, `1.core/styles.css`
+**Cluster:** Mobile & PWA | **Esforço:** M | **Tipo:** Bug | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/modules/social.js, 1.core/styles.css.
 1. Abrir styles.css e localizar .modal-box-social ou o container do chat global
 2. Substituir height: 90dvh por height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))
 3. No input do chat (.chat-input-row), adicionar padding-bottom: env(safe-area-inset-bottom)
@@ -284,32 +84,8 @@ Analytics completamente cegas. Todas as chamadas existentes no código disparam 
 6. Commit: "fix: ajustar height do chat modal para visualViewport no iOS Safari"
 ```
 
----
-
-### PWA-002 · Service Worker sem versionamento explícito
-**Cluster:** Mobile & PWA | **Esforço:** S | **Arquivo:** `1.core/sw.js`
-
-```
-1. Abrir 1.core/sw.js
-2. Localizar a constante CACHE_NAME (ex: const CACHE_NAME = 'liferpg-cache-v1')
-3. Incrementar versão sempre que houver deploy significativo: 'liferpg-cache-v1.2.0'
-4. Adicionar no evento 'activate' do SW:
-   self.addEventListener('activate', event => {
-     event.waitUntil(
-       caches.keys().then(keys => Promise.all(
-         keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-       ))
-     );
-     return self.clients.claim();
-   });
-5. Adicionar no evento 'install': self.skipWaiting();
-6. Commit: "fix: versionamento de cache no SW + skipWaiting e clientsClaim"
-```
-
----
-
 ### PWA-003 · Sem feedback de estado offline
-**Cluster:** Mobile & PWA | **Esforço:** M | **Arquivos:** `1.core/pwa.js`, `1.core/styles.css`, `index.html`
+**Cluster:** Mobile & PWA | **Esforço:** M | **Tipo:** Bug | **Fase:** Próximas semanas
 
 ```
 1. Adicionar div no index.html logo após a abertura do body: <div id="offline-banner" class="offline-banner" style="display:none">⚡ MODO OFFLINE — dados serão sincronizados ao reconectar</div>
@@ -320,10 +96,8 @@ Analytics completamente cegas. Todas as chamadas existentes no código disparam 
 4. Commit: "feat: banner de modo offline + trigger de sync ao reconectar"
 ```
 
----
-
 ### ENG-001 · Imagens de avatar 1MB+ sem otimização
-**Cluster:** Engenharia | **Esforço:** M | **Pasta:** `2.assets/avatars/`
+**Cluster:** Engenharia | **Esforço:** M | **Tipo:** Tech Debt | **Fase:** Próximas semanas
 
 ```
 1. Instalar sharp ou squoosh CLI se disponível: npm install -g @squoosh/cli
@@ -337,12 +111,11 @@ Analytics completamente cegas. Todas as chamadas existentes no código disparam 
 8. Commit: "perf: converter avatares para WebP e adicionar lazy loading"
 ```
 
----
-
 ### UX-002 · 3 colunas de quest muito estreitas em mobile
-**Cluster:** UX/Visual | **Esforço:** M | **Arquivo:** `1.core/styles.css`
+**Cluster:** UX/Visual | **Esforço:** M | **Tipo:** Enhancement | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/styles.css.
 1. Abrir styles.css e localizar .quests-three-columns
 2. Modificar para ser responsivo:
    @media (max-width: 640px) {
@@ -362,12 +135,11 @@ Analytics completamente cegas. Todas as chamadas existentes no código disparam 
 6. Commit: "feat: layout responsivo de quests em mobile (1 coluna com tabs)"
 ```
 
----
-
 ### UX-003 · Toast messages do Iroh muito longas
-**Cluster:** UX/Visual | **Esforço:** S | **Arquivo:** `1.core/modules/ui.js`, `1.core/styles.css`
+**Cluster:** UX/Visual | **Esforço:** S | **Tipo:** Enhancement | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/modules/ui.js, 1.core/styles.css.
 1. Em ui.js, localizar a função showSystemToast
 2. Adicionar lógica de duração baseada em tamanho: const duration = msg.length > 120 ? 8000 : 4500;
 3. Para toasts com mais de 200 caracteres (mensagens de penalidade severa do Iroh): abrir em modal próprio ao invés de toast
@@ -376,12 +148,11 @@ Analytics completamente cegas. Todas as chamadas existentes no código disparam 
 6. Commit: "feat: toasts longos do Iroh abrem em modal — melhora legibilidade"
 ```
 
----
-
 ### UX-004 · Level Up overlay não mostra o que desbloqueou
-**Cluster:** UX/Visual | **Esforço:** M | **Arquivo:** `1.core/modules/ui.js`, `index.html`
+**Cluster:** UX/Visual | **Esforço:** M | **Tipo:** Enhancement | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/modules/ui.js, index.html.
 1. Em ui.js, localizar a função triggerLevelUpOverlay
 2. Após calcular o novo nível, buscar em ALL_HABITS_DATABASE os hábitos com minLevel === novoNivel
 3. Buscar em BOSS_QUEST_BY_LEVEL se o novo nível ativa uma boss quest
@@ -391,12 +162,11 @@ Analytics completamente cegas. Todas as chamadas existentes no código disparam 
 7. Commit: "feat: overlay de Level Up exibe hábitos desbloqueados e boss quest ativada"
 ```
 
----
-
 ### UX-005 · Radar chart sem labels nos vértices
-**Cluster:** UX/Visual | **Esforço:** S | **Arquivo:** `1.core/modules/ui.js`
+**Cluster:** UX/Visual | **Esforço:** S | **Tipo:** Enhancement | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/modules/ui.js.
 1. Em ui.js, localizar a função que renderiza o radar chart (skills-radar-chart canvas)
 2. Após desenhar o hexágono preenchido, adicionar renderização de labels nos 6 vértices
 3. Labels curtos: FÍS / MEN / FOC / SAB / ROT / CON
@@ -406,12 +176,11 @@ Analytics completamente cegas. Todas as chamadas existentes no código disparam 
 7. Commit: "feat: labels nos vértices do radar chart e tooltip no hover"
 ```
 
----
-
 ### UX-006 · Weekly Report com texto pequeno em mobile
-**Cluster:** UX/Visual | **Esforço:** S | **Arquivo:** `1.core/styles.css`
+**Cluster:** UX/Visual | **Esforço:** S | **Tipo:** Enhancement | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/styles.css.
 1. Abrir styles.css e localizar estilos do .weekly-report-modal-box
 2. Garantir font-size mínimo de 11px em todos os elementos internos do modal
 3. No grid de dias (Perfeitos/Bons/Falhados), alterar de 3 colunas para 2 colunas em mobile:
@@ -421,12 +190,11 @@ Analytics completamente cegas. Todas as chamadas existentes no código disparam 
 6. Commit: "fix: legibilidade do Weekly Report em mobile — font sizes e grid responsivo"
 ```
 
----
-
 ### GAME-001 · Penalidade P0 muito punitiva para novos jogadores (< nível 10)
-**Cluster:** Game Design | **Esforço:** S | **Arquivo:** `1.core/modules/game-logic.js`
+**Cluster:** Game Design | **Esforço:** S | **Tipo:** Feature | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/modules/game-logic.js.
 1. Em game-logic.js, localizar a função applyDailyPenalty
 2. Após determinar xpPenaltyPct, adicionar cap por nível:
    if (gameState.level < 10) {
@@ -437,10 +205,8 @@ Analytics completamente cegas. Todas as chamadas existentes no código disparam 
 4. Commit: "game: cap de penalidade para jogadores nível < 10 — reduzir churn de novatos"
 ```
 
----
-
 ### GAME-002 · Buff Double XP sem indicador visual nos quest cards
-**Cluster:** Game Design | **Esforço:** S | **Arquivos:** `1.core/modules/ui.js`, `1.core/styles.css`
+**Cluster:** Game Design | **Esforço:** S | **Tipo:** Feature | **Fase:** Próximas semanas
 
 ```
 1. Em ui.js, localizar a função renderQuests (que gera o HTML dos cards de quest)
@@ -451,10 +217,8 @@ Analytics completamente cegas. Todas as chamadas existentes no código disparam 
 6. Commit: "feat: indicadores visuais de buffs ativos (Double XP, Legendary Focus) nos quest cards"
 ```
 
----
-
 ### GAME-003 · Daily reset sem countdown visível para o usuário
-**Cluster:** Game Design | **Esforço:** S | **Arquivos:** `index.html`, `1.core/modules/ui.js`
+**Cluster:** Game Design | **Esforço:** S | **Tipo:** Feature | **Fase:** Próximas semanas
 
 ```
 1. Adicionar elemento no header da aba Missões: <div id="reset-countdown" class="reset-countdown"></div>
@@ -467,12 +231,11 @@ Analytics completamente cegas. Todas as chamadas existentes no código disparam 
 5. Commit: "feat: countdown de reset diário na aba de Missões"
 ```
 
----
-
 ### SOCIAL-001 · Friends: busca por prefixo ao invés de username exato
-**Cluster:** Social | **Esforço:** M | **Arquivo:** `1.core/modules/social.js`
+**Cluster:** Social | **Esforço:** M | **Tipo:** Feature | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/modules/social.js.
 1. Em social.js, localizar a função de busca de amigos (provavelmente triggerFriendSearch ou similar)
 2. Substituir query de busca exata por ILIKE:
    .from('persons').select('id, username, level, rank').ilike('username', `%${searchTerm}%`).limit(5)
@@ -480,10 +243,8 @@ Analytics completamente cegas. Todas as chamadas existentes no código disparam 
 4. Commit: "feat: busca de amigos por prefixo (ILIKE) ao invés de username exato"
 ```
 
----
-
 ### SOCIAL-002 · Sem botão de desafio PvP no modal de perfil
-**Cluster:** Social | **Esforço:** S | **Arquivos:** `index.html`, `1.core/modules/social.js`
+**Cluster:** Social | **Esforço:** S | **Tipo:** Feature | **Fase:** Próximas semanas
 
 ```
 1. Em index.html, localizar o modal #modal-player-profile
@@ -494,25 +255,8 @@ Analytics completamente cegas. Todas as chamadas existentes no código disparam 
 5. Commit: "feat: botão de desafio PvP direto do modal de perfil do jogador"
 ```
 
----
-
-### ANALYTICS-001 · Evento de buff comprado para medir conversão da Taverna
-**Cluster:** Analytics | **Esforço:** XS | **Arquivo:** `1.core/modules/game-logic.js`
-
-Depende de ANALYTICS-001 (trackEvent implementado).
-
-```
-1. Em game-logic.js, localizar a função buyStoreItem
-2. Após a linha gameState.gold -= cost; e antes de saveGameData(), adicionar:
-   trackEvent('item_purchased', { item_id: itemId, cost: cost, player_level: gameState.level, player_gold_after: gameState.gold });
-3. Adicionar também evento para compra bloqueada por nível insuficiente: trackEvent('item_purchase_blocked', { item_id: itemId, required_level: requiredLevel, player_level: gameState.level })
-4. Commit: "analytics: trackEvent em compras da Taverna e bloqueios por nível"
-```
-
----
-
 ### SEC-001 · Chat global: rate limit para evitar spam
-**Cluster:** Segurança | **Esforço:** M | **Banco:** Supabase SQL + `social.js`
+**Cluster:** Segurança | **Esforço:** M | **Tipo:** Segurança | **Fase:** Próximas semanas
 
 ```
 1. No Supabase SQL Editor, adicionar RLS policy de rate limit em global_chat:
@@ -525,26 +269,23 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 3. Commit: "security: rate limit de 10 msgs/min no chat global via RLS + debounce 3s no frontend"
 ```
 
----
-
 ### MKT-002 · "Streak em risco" push notification às 22h
-**Cluster:** Marketing | **Esforço:** M | **Dependência:** SEG-001 (VAPID) resolvido
+**Cluster:** Marketing | **Esforço:** M | **Tipo:** Feature | **Fase:** Próximas semanas
 
 ```
 1. Criar Supabase Edge Function `send-streak-reminder` que:
    - Busca todos os users com push_subscription ativo que NÃO completaram nenhuma daily hoje
    - Envia push notification com payload: { title: '⚠️ LifeRPG — Streak em Risco', body: 'Seu streak de X dias não sobrevive à meia-noite sem uma missão.' }
-2. No pg_cron, agendar: SELECT cron.schedule('streak-reminder', '0 22 * * *', $$SELECT net.http_post(url := current_setting('app.edge_functions_url') || '/send-streak-reminder', headers := '{"Authorization": "Bearer " || current_setting("app.service_role_key")}')$$);
+2. No pg_cron, agendar: SELECT cron.schedule('streak-reminder', '0 22 * * *', $SELECT net.http_post(url := current_setting('app.edge_functions_url') || '/send-streak-reminder', headers := '{"Authorization": "Bearer " || current_setting("app.service_role_key")}')$);
 3. Em pwa.js, garantir que push_subscription do usuário é salvo em uma tabela `push_subscriptions` ao se inscrever
 4. Commit: "feat: push notification de streak em risco às 22h via Edge Function + pg_cron"
 ```
 
----
-
 ### A11Y-001 · Botões ✕/✓ com área de toque insuficiente em mobile
-**Cluster:** Acessibilidade | **Esforço:** S | **Arquivo:** `1.core/styles.css`
+**Cluster:** Acessibilidade | **Esforço:** S | **Tipo:** Enhancement | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/styles.css.
 1. Abrir styles.css e localizar estilos dos botões de completar/remover quest (✓ e ✕)
 2. Garantir min-width: 44px; min-height: 44px; em todos os botões de ação dos quest cards
 3. Se visualmente não couber 44px de botão, usar padding negativo:
@@ -553,10 +294,8 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 5. Commit: "a11y: aumentar área de toque dos botões de quest para mínimo 44x44px"
 ```
 
----
-
 ### A11Y-002 · Toasts e overlays sem ARIA
-**Cluster:** Acessibilidade | **Esforço:** S | **Arquivos:** `index.html`, `1.core/modules/ui.js`
+**Cluster:** Acessibilidade | **Esforço:** S | **Tipo:** Enhancement | **Fase:** Próximas semanas
 
 ```
 1. Em index.html, localizar #toast-container e adicionar role="status" aria-live="polite" aria-atomic="true"
@@ -567,12 +306,11 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 6. Commit: "a11y: adicionar ARIA roles em toasts/overlays + respeitar prefers-reduced-motion"
 ```
 
----
-
 ### ONBOARD-001 · Wizard: adicionar 3ª opção de gênero + mover para após o nome
-**Cluster:** Onboarding | **Esforço:** S | **Arquivo:** `index.html`, `1.core/modules/app.js`
+**Cluster:** Onboarding | **Esforço:** S | **Tipo:** Enhancement | **Fase:** Próximas semanas
 
 ```
+Ver index.html, 1.core/modules/app.js.
 1. Em index.html, localizar #wizard-step-0 (seleção de gênero)
 2. Adicionar terceiro card: <div class="gender-card" id="btn-gender-neutral" data-gender="neutral"><div style="font-size: 3.5rem; margin-bottom: 10px;">⚡</div><strong>Neutro</strong></div>
 3. No app.js/pwa.js, adicionar data-gender="neutral" ao handler de seleção existente
@@ -581,12 +319,11 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 6. Commit: "feat: adicionar opção de gênero neutro no onboarding + reordenar step para após nome"
 ```
 
----
-
 ### ONBOARD-002 · Hook habit do onboarding personalizado por archetype
-**Cluster:** Onboarding | **Esforço:** M | **Arquivo:** `1.core/modules/game-logic.js` ou `app.js`
+**Cluster:** Onboarding | **Esforço:** M | **Tipo:** Enhancement | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/modules/game-logic.js ou app.js.
 1. Criar mapa de archetype → hábitos sugeridos:
    const ARCHETYPE_HABITS = {
      corpo: [{ title: 'Treinar 20 minutos', skill: 'physical', xp: 30, gold: 15 }, { title: 'Beber 2L de água', skill: 'physical', xp: 20, gold: 10 }, { title: 'Caminhar 30 minutos', skill: 'physical', xp: 25, gold: 12 }],
@@ -600,12 +337,11 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 4. Commit: "feat: hook habits do onboarding personalizados por archetype — 3 opções por tipo"
 ```
 
----
-
 ### META-001 · Novos achievements — expandir catálogo
-**Cluster:** Meta-Progressão | **Esforço:** M | **Arquivo:** `1.core/modules/game-logic.js`
+**Cluster:** Meta-Progressão | **Esforço:** M | **Tipo:** Feature | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/modules/game-logic.js.
 1. Em game-logic.js, localizar o array ACHIEVEMENTS_DEFS
 2. Adicionar os seguintes achievements ao array:
    { id: 'quests_5_day', title: 'Dia Lendário', desc: 'Complete 5 missões em um único dia', icon: '🔥', rewardGold: 30, rarity: 'raro', check: (gs) => (gs._maxDailyCompleted || 0) >= 5, progress: (gs) => ({ cur: Math.min(gs._maxDailyCompleted || 0, 5), max: 5 }) },
@@ -617,28 +353,10 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 4. Commit: "feat: 5 novos achievements — Dia Lendário, Veterano, Lenda, Gladiador, Aliança"
 ```
 
----
-
-### META-002 · Avatar ranks — confirmar que todos os ranks têm ambos os gêneros
-**Cluster:** Meta-Progressão | **Esforço:** M | **Pasta:** `2.assets/avatars/`
-
-```
-1. Listar todos os arquivos em 2.assets/avatars/ para ambas as pastas (female/male)
-2. Confirmar que existem arquivos para ranks: 1.rank-e, 2.rank-d, 3.rank-c, 4.rank-b, 5.rank-a, 6.rank-s
-3. Para ranks faltantes: criar ou solicitar arte (placeholder aceitável enquanto arte não está pronta)
-4. Em ui.js, confirmar que a função de troca de avatar usa corretamente gameState.gender para selecionar a pasta certa
-5. Adicionar gênero neutral como alias para male ou criar pasta separada
-6. Commit: "feat: garantir cobertura de todos os ranks para todos os gêneros nos avatares"
-```
-
----
-
-## 🟣 P2 — MÉDIO (Próximas semanas, ordem flexível)
-
----
+## 🟣 P2 — MÉDIO (7)
 
 ### GAME-004 · Comeback mechanic para usuários que voltam após 7+ dias
-**Cluster:** Game Design | **Esforço:** M
+**Cluster:** Game Design | **Esforço:** M | **Tipo:** Feature | **Fase:** Próximas semanas
 
 ```
 1. Em state.js ou app.js, no boot do app, calcular dias desde last_active
@@ -648,10 +366,8 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 5. Commit: "feat: Modo Retorno — 1.5x XP por 3 dias após ausência de 7+ dias"
 ```
 
----
-
 ### ENG-002 · social.js: lazy loading ao abrir o modal Social
-**Cluster:** Engenharia | **Esforço:** M
+**Cluster:** Engenharia | **Esforço:** M | **Tipo:** Tech Debt | **Fase:** Próximas semanas
 
 ```
 1. Em app.js, no evento de clique do botão #btn-header-social:
@@ -662,12 +378,11 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 4. Commit: "perf: lazy load do módulo social.js — import dinâmico ao abrir modal"
 ```
 
----
-
 ### GAME-005 · Dungeon pool: expandir para 20+ missões com raridade
-**Cluster:** Meta-Progressão | **Esforço:** M | **Arquivo:** `1.core/modules/state.js`
+**Cluster:** Meta-Progressão | **Esforço:** M | **Tipo:** Feature | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/modules/state.js.
 1. Em state.js, localizar DUNGEON_POOL
 2. Expandir para pelo menos 20 entradas cobrindo todos os 6 skills
 3. Adicionar campo rarity: 'comum' | 'raro' | 'épico' com multiplicadores de recompensa 1x / 1.5x / 2.5x
@@ -676,23 +391,8 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 6. Commit: "feat: expandir dungeon pool para 20+ missões com sistema de raridade"
 ```
 
----
-
-### UX-007 · Empty state da Visão Global reescrito
-**Cluster:** UX/Visual | **Esforço:** XS | **Arquivo:** `index.html`
-
-```
-1. Em index.html, localizar #global-empty-state
-2. Substituir o texto interno por:
-   "Seu mapa tático está em formação. Complete sua primeira missão hoje e a primeira marca será revelada às 00h."
-3. Adicionar um mini-heatmap placeholder animado (5x5 grid de quadrados semitransparentes pulsantes como preview)
-4. Commit: "ux: reescrever empty state da Visão Global para ser mais motivacional"
-```
-
----
-
 ### A11Y-003 · Radar chart com descrição para screen readers
-**Cluster:** Acessibilidade | **Esforço:** S
+**Cluster:** Acessibilidade | **Esforço:** S | **Tipo:** Enhancement | **Fase:** Próximas semanas
 
 ```
 1. Em index.html, adicionar após o canvas do radar: <div class="sr-only" id="radar-description" aria-live="polite"></div>
@@ -701,12 +401,11 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 4. Commit: "a11y: descrição de texto para o radar chart — acessibilidade screen readers"
 ```
 
----
-
 ### MKT-003 · Weekly Report: botão de compartilhar
-**Cluster:** Marketing | **Esforço:** M | **Arquivo:** `1.core/modules/weekly-report.js`, `index.html`
+**Cluster:** Marketing | **Esforço:** M | **Tipo:** Feature | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/modules/weekly-report.js, index.html.
 1. Em index.html, adicionar botão no modal-weekly-report: <button id="btn-share-report" class="btn-submit btn-secondary" style="width:100%;margin-top:8px;">📤 COMPARTILHAR RELATÓRIO</button>
 2. Em weekly-report.js, no listener do btn-share-report:
    - Usar html2canvas (importar do CDN) para capturar o modal como imagem
@@ -715,34 +414,19 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 3. Commit: "feat: botão de compartilhar relatório semanal como imagem"
 ```
 
----
-
-### GAME-006 · XP necessário para próximo nível visível na XP bar
-**Cluster:** Game Design | **Esforço:** XS
-
-```
-1. Em index.html, no .xp-bar-header, o elemento já tem #lbl-xp-current e #lbl-xp-next
-2. Confirmar que updateUI() atualiza esses valores corretamente com gameState.xp e gameState.xpToNext
-3. Adicionar tooltip ao hover na XP bar: "Faltam X XP para o Nível Y"
-4. Commit: "ux: confirmar visibilidade de XP atual/necessário na barra de experiência"
-```
-
----
-
 ### SEC-003 · Presença Supabase: configurar heartbeat e expiração de sessões zombie
-**Cluster:** Segurança | **Esforço:** S | **Arquivo:** `1.core/modules/social.js`
+**Cluster:** Segurança | **Esforço:** S | **Tipo:** Segurança | **Fase:** Próximas semanas
 
 ```
+Ver 1.core/modules/social.js.
 1. Em social.js, localizar initPresence() ou o código de channel Presence
 2. Ao criar o canal Presence, configurar: { config: { presence: { key: userId }, heartbeat_interval_ms: 30000 } }
 3. Adicionar limpeza no evento beforeunload: window.addEventListener('beforeunload', () => presenceChannel.untrack())
 4. Commit: "fix: heartbeat de 30s e cleanup de presença ao fechar o app"
 ```
 
----
-
 ### ONBOARD-003 · Prompt de instalação PWA no final do onboarding
-**Cluster:** Onboarding | **Esforço:** S
+**Cluster:** Onboarding | **Esforço:** S | **Tipo:** Enhancement | **Fase:** Próximas semanas
 
 ```
 1. Em app.js ou pwa.js, capturar o evento beforeinstallprompt: let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
@@ -752,14 +436,10 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 4. Commit: "feat: prompt de instalação PWA ao final do onboarding wizard"
 ```
 
----
-
-## ⚪ P3 — FUTURO (Backlog estratégico)
-
----
+## ⚪ P3 — FUTURO (7)
 
 ### ENG-003 · styles.css: PurgeCSS e minificação para produção
-**Cluster:** Engenharia | **Esforço:** M
+**Cluster:** Engenharia | **Esforço:** M | **Tipo:** Tech Debt | **Fase:** Futuro
 
 ```
 1. Configurar build script com PurgeCSS: npx purgecss --css 1.core/styles.css --content index.html 1.core/**/*.js --output 1.core/styles.min.css
@@ -768,10 +448,8 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 4. Commit: "perf: PurgeCSS no pipeline de produção — remover CSS não utilizado"
 ```
 
----
-
 ### GAME-007 · Prestige system após Rank S (nível 30)
-**Cluster:** Meta-Progressão | **Esforço:** L
+**Cluster:** Meta-Progressão | **Esforço:** L | **Tipo:** Feature | **Fase:** Futuro
 
 ```
 1. Definir mecânica: ao atingir nível 30, opção de "Ascender" — reseta XP para 0 mas mantém hábitos e conquistas
@@ -781,10 +459,8 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 5. Commit: "feat: Prestige system — progressão além do Rank S"
 ```
 
----
-
 ### FEAT-001 · Aba MENTOR (Tio Iroh IA via Claude API) — desabilitar display:none
-**Cluster:** Meta-Progressão | **Esforço:** XL
+**Cluster:** Meta-Progressão | **Esforço:** XL | **Tipo:** Feature | **Fase:** Futuro
 
 ```
 1. Criar Supabase Edge Function `mentor-chat` que recebe { message, gameState_summary } e chama Claude API
@@ -795,10 +471,8 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 6. Commit: "feat: ativar aba Mentor — Tio Iroh IA contextualizado com gameState do jogador"
 ```
 
----
-
 ### FEAT-002 · Sistema de missões semanais
-**Cluster:** Game Design | **Esforço:** L
+**Cluster:** Game Design | **Esforço:** L | **Tipo:** Feature | **Fase:** Futuro
 
 ```
 1. Criar tabela weekly_challenges (id, title, description, target_count, skill, xp_reward, gold_reward, week_number, year)
@@ -808,10 +482,8 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 5. Commit: "feat: sistema de Desafios Semanais com recompensas de XP e Gold"
 ```
 
----
-
 ### FEAT-003 · Landing page pública com CTA de instalação
-**Cluster:** Marketing | **Esforço:** L
+**Cluster:** Marketing | **Esforço:** L | **Tipo:** Feature | **Fase:** Futuro
 
 ```
 1. Criar arquivo landing.html na raiz do repo (ou subdomínio separado)
@@ -821,10 +493,8 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 5. Commit: "feat: landing page pública com CTA de instalação do PWA"
 ```
 
----
-
 ### FEAT-004 · Sistema de convite com link único
-**Cluster:** Marketing | **Esforço:** M
+**Cluster:** Marketing | **Esforço:** M | **Tipo:** Feature | **Fase:** Futuro
 
 ```
 1. Criar tabela invite_codes (code text PK, created_by uuid, used_by uuid, created_at, used_at)
@@ -835,10 +505,8 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 6. Commit: "feat: sistema de convite com link único e recompensas bilaterais"
 ```
 
----
-
 ### FEAT-005 · Roadmap gamificado dentro do app ("NEXUS")
-**Cluster:** Meta-Progressão | **Esforço:** S
+**Cluster:** Meta-Progressão | **Esforço:** S | **Tipo:** Feature | **Fase:** Futuro
 
 ```
 1. Criar modal #modal-roadmap com título "NEXUS — Missões do Sistema"
@@ -847,32 +515,3 @@ Depende de ANALYTICS-001 (trackEvent implementado).
 4. Adicionar botão de acesso no header ou sidebar
 5. Commit: "feat: modal de roadmap gamificado — 'NEXUS — Missões do Sistema'"
 ```
-
----
-
-## 📋 RESUMO EXECUTIVO
-
-| Prioridade | Qtd | Foco Principal |
-|-----------|-----|----------------|
-| **P0 Crítico** | 8 | Bugs bloqueantes, segurança, UX crítica |
-| **P1 Alto** | 23 | Performance, retenção, analytics, UX |
-| **P2 Médio** | 18 | Game design, social, acessibilidade |
-| **P3 Futuro** | 7 | Features estratégicas e endgame |
-
-**Ordem recomendada de execução P0:**
-```
-1. BUG-003 (manifest PWA 404) — 5 minutos
-2. MKT-001 (og:image meta tags) — 10 minutos
-3. SEG-001 (novo par VAPID) — 15 minutos
-4. TECH-001 (CLAUDE.md atualizado) — 20 minutos
-5. SEG-002 (RLS todas as tabelas) — 30 minutos
-6. BUG-004 (pg_cron duelos) — 15 minutos
-7. BUG-005 (onclick inline → listeners) — 30 minutos
-8. UX-001 (fontes Settings modal) — 45 minutos
-9. BUG-001 (ensureUserProfile) — 60 minutos
-10. BUG-002 (chat não aparece) — 45 minutos
-```
-
----
-
-*Pipeline gerado via auditoria completa do Drive (index.html 85KB, game-logic.js 46KB, social.js 110KB, ui.js 75KB, state.js 34KB, styles.css 110KB, weekly-report.js 13KB, utils.js 10KB, sw.js 9KB, report-worker.js 4KB)*
