@@ -67,5 +67,7 @@ O **LifeRPG OS** (v2.0) é um aplicativo web progressivo (PWA) de gamificação 
 ---
 
 ## 🐛 6. Estado Atual, Bugs e Pendências
-*   **Firebase / Cloud Save**: A lógica de autenticação do Google e sincronização assíncrona com Firestore está totalmente pronta e mapeada no script `firebase-config.js`. Contudo, a persistência online e as features sociais (como rankings e PvP de streaks) dependem da inserção das credenciais finais do usuário no arquivo de configuração do console do Firebase.
-*   **Notificações Push**: A estrutura do Service Worker está configurada para gerir notificações locais e horários de configuração, mas os disparos em segundo plano necessitam da integração do FCM ou Web Push API com um servidor de persistência de chaves de assinatura (VAPID).
+*   **Supabase / Cloud Save**: A autenticação (OAuth Google) e a sincronização com o Postgres do Supabase estão implementadas em `1.core/supabase-config.js` (script clássico, **não** é ES Module). Tabelas: `persons`, `users`, `quests`, `history`, `items`, `inventory`, `user_buffs`, `analytics_events`, `chat_messages`, `friendships`, `pvp_duels`, `push_subscriptions`. O state sincroniza via RPC `sync_user_state_secure` (validações de nível/XP/rank no servidor). Scripts de schema em `3.docs/*.sql`.
+*   **Arquitetura ES Modules**: entry point `1.core/app.js`; módulos em `1.core/modules/` (`state.js`, `utils.js`, `ui.js`, `game-logic.js`, `social.js`, `pwa.js`, `weekly-report.js`, `report-worker.js`). O `supabase-config.js` permanece script clássico e expõe funções em `window.*`.
+*   **Versão**: fonte única em `1.core/version.js` (ver seção 4). Histórico em `3.docs/CHANGELOG.md`.
+*   **Notificações Push (VAPID)**: a estrutura do Service Worker está pronta; os disparos em segundo plano dependem de Edge Function + par de chaves VAPID configurado nos Secrets do Supabase (a chave privada **nunca** vai para o repositório). Pendência aberta — ver `3.docs/pipeline.html` (SEG-001).
