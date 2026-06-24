@@ -1,11 +1,11 @@
 # LifeRPG OS — Pipeline de Pendências
 
 > **Sincronizado automaticamente com `pipeline.html`.** Não editar à mão — editar o array `items` no HTML e ressincronizar.
-> **Total: 37 itens pendentes.**
+> **Total: 36 itens pendentes.**
 
 ---
 
-## 🔴 P0 — CRÍTICO (3)
+## 🔴 P0 — CRÍTICO (2)
 
 ### BUG-002 · Mensagens do chat global não aparecem ao enviar
 **Cluster:** Bug Crítico | **Esforço:** S | **Tipo:** Bug | **Fase:** Agora
@@ -21,30 +21,6 @@ Ver 1.core/modules/social.js.
 5. Adicionar policy se ausente: `CREATE POLICY "Authenticated users can read chat" ON global_chat FOR SELECT TO authenticated USING (true);`
 6. Testar: enviar mensagem e confirmar que aparece sem refresh
 7. Commit: "fix: subscription Realtime no chat global + RLS policy de SELECT"
-```
-
-### UX-001 · Settings modal muito denso — fontes pequenas (feedback confirmado)
-**Cluster:** UX/Visual | **Esforço:** M | **Tipo:** Enhancement | **Fase:** Agora
-
-Modal de configurações identificado como inacessível. Escalonamento de fontes pendente.
-
-```
-Ver 1.core/styles.css.
-1. Abrir `1.core/styles.css`
-2. Localizar `body` e ajustar: `font-size: 15px; line-height: 1.5;`
-3. Localizar `.quest-title` e ajustar: `font-size: 15px;`
-4. Localizar `.quest-meta`, `.payout-xp`, `.payout-gold` e ajustar: `font-size: 11px;`
-5. Localizar `.section-title h2` e ajustar: `font-size: 22px;`
-6. Localizar `.player-name` e ajustar: `font-size: 16px;`
-7. Localizar `.attr-bar-name` e ajustar: `font-size: 12px;`
-8. Localizar `.settings-group-title` e ajustar: `font-size: 13px;`
-9. Localizar `.settings-group-desc` e ajustar: `font-size: 12px;`
-10. Localizar `label`, `.form-field label` e ajustar: `font-size: 12px;`
-11. Localizar `.btn-submit` dentro do settings e ajustar: `font-size: 14px;`
-12. No `#modal-settings`: condensar bloco de notificações — unificar Manhã/Noite em uma linha compacta lado a lado
-13. Reduzir aviso de Hard Reset para 1 linha, diminuir padding do bloco
-14. Testar no Dev em resolução 390px (iPhone 14)
-15. Commit: "feat: escalonamento de fontes e simplificação do modal Settings"
 ```
 
 ### SEG-002 · Verificar RLS em todas as tabelas Supabase
