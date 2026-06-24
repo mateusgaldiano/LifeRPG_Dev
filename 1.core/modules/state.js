@@ -2,7 +2,8 @@
 import { localDateStr, getXpToNextForLevel, hasSkillLV3, initSkillsState, isQuestActiveOnDay } from './utils.js';
 import { syncQuestsByLevel, checkDungeonExpiry, checkWeeklyBossExpiry, spawnDungeon, checkAchievements, saveToCloud } from './game-logic.js';
 
-export const APP_VERSION = 'v2.1.0';
+// Versão vem da fonte única (1.core/version.js, carregado antes dos módulos).
+export const APP_VERSION = (typeof self !== 'undefined' && self.APP_VERSION) ? self.APP_VERSION : 'v0.0.0';
 
 /* ==========================================================================
    LIFERPG - CORE GAME LOGIC & COMPANION SYSTEM (2026)

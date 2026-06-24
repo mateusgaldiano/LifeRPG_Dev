@@ -3,11 +3,14 @@
    Cache-first strategy + Local notifications scheduling
    ========================================================================== */
 
-const CACHE_VERSION = 'v1.5.7';
+// Versão vem da fonte única (1.core/version.js) — bump APENAS lá.
+importScripts('1.core/version.js');
+const CACHE_VERSION = self.APP_VERSION;
 const CACHE_NAME = `liferpg-cache-${CACHE_VERSION}`;
 const ASSETS_TO_CACHE = [
     './',
     'index.html',
+    '1.core/version.js',
     '1.core/styles.css',
     '1.core/supabase-config.js',
     '1.core/app.js',
