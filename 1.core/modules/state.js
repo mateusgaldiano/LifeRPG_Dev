@@ -595,10 +595,22 @@ function loadGameData() {
         
         // Sanitize legacy corrupted icons in saved quests
         const cleanQuestCounters = (q) => {
-            const isWater = q.id?.includes('agua') || 
-                            q.title?.toLowerCase().includes('água') || 
-                            q.title?.toLowerCase().includes('agua') || 
-                            q.icon === '💧' || 
+            // Higienização bucal: contador fixo 0/2 (não é checkbox simples e NÃO herda o 8 da água).
+            // Auto-corrige saves antigos em que a quest ficou sem contador.
+            const isOralHygiene = q.id?.includes('dente') || q.id?.includes('bucal') ||
+                                  q.title?.toLowerCase().includes('higieniza') ||
+                                  q.title?.toLowerCase().includes('bucal') ||
+                                  q.icon === '🪥' || q.emoji === '🪥';
+            if (isOralHygiene) {
+                q.target = 2;
+                if (q.current === undefined || q.current === null) q.current = 0;
+                if (q.current > 2) q.current = 2;
+            }
+
+            const isWater = q.id?.includes('agua') ||
+                            q.title?.toLowerCase().includes('água') ||
+                            q.title?.toLowerCase().includes('agua') ||
+                            q.icon === '💧' ||
                             q.emoji === '💧';
 
             // Preserva contador se target > 1 (água OU qualquer outra quest com contador, ex: higienização bucal 0/2)
