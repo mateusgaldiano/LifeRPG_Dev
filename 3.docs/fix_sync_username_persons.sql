@@ -1,26 +1,62 @@
 -- ==========================================================================
--- FIX: "Could not find the function sync_user_state_secure in the schema cache"
--- + coluna username faltando em persons (migração de username)
+-- FIX: estado inconsistente da migração de username
 --
--- Rode este script INTEIRO no Supabase → SQL Editor → New query → Run.
--- É idempotente: pode rodar mais de uma vez sem problema.
+-- Sintomas:
+--   - "Could not find the function sync_user_state_secure in the schema cache"
+--   - "column u.username does not exist"
+--
+-- Causa: a coluna username foi REMOVIDA de `users`, mas:
+--   - a função RPC sync_user_state_secure ainda grava em users.username
+--   - a view de ranking (comunidade) e a view de PvP leem users.username
+--   - o client (deploy atual) ainda insere users.username
+--
+-- Estratégia: restaurar users.username E manter persons.username, com as duas
+-- colunas sincronizadas. Assim PvP, ranking, RPC e o client funcionam juntos.
+--
+-- Rode este script INTEIRO no Supabase -> SQL Editor -> Run. É idempotente.
 -- ==========================================================================
 
--- 1) Garante a coluna username em persons (lida pelo client após a migração).
---    Sem UNIQUE para não conflitar — a unicidade já é garantida por users.username.
+-- 1) Garante a coluna username nas DUAS tabelas (nullable por enquanto).
 ALTER TABLE persons ADD COLUMN IF NOT EXISTS username text;
+ALTER TABLE users   ADD COLUMN IF NOT EXISTS username text;
 
--- 2) Backfill: copia o username já existente em users para persons,
---    para perfis criados antes da migração.
+-- 2) Backfill: traz para users o username que ficou em persons.
+UPDATE users u
+SET username = p.username
+FROM persons p
+WHERE p.id = u.person_id
+  AND (u.username IS NULL OR u.username = '')
+  AND p.username IS NOT NULL AND p.username <> '';
+
+-- 3) Fallback: qualquer user ainda sem username recebe um nome único
+--    (evita violar a constraint UNIQUE e o NOT NULL das views).
+UPDATE users
+SET username = 'Jogador_' || substr(id::text, 1, 8)
+WHERE username IS NULL OR username = '';
+
+-- 4) Garante persons.username preenchido a partir de users (mantém em sincronia).
 UPDATE persons p
 SET username = u.username
 FROM users u
 WHERE u.person_id = p.id
-  AND (p.username IS NULL OR p.username = '');
+  AND (p.username IS NULL OR p.username = '')
+  AND u.username IS NOT NULL;
 
--- 3) Recria a função com a assinatura EXATA que o client chama (10 parâmetros).
---    Mantém todas as validações originais e passa a gravar o username também
---    em persons (fonte de leitura do client após a migração).
+-- 5) Reaplica a constraint UNIQUE em users.username, se não existir.
+--    Não aborta o script caso haja duplicatas — apenas avisa.
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'users_username_key') THEN
+    BEGIN
+      ALTER TABLE users ADD CONSTRAINT users_username_key UNIQUE (username);
+    EXCEPTION WHEN unique_violation THEN
+      RAISE NOTICE 'Existem usernames duplicados — constraint UNIQUE NAO aplicada. Resolva duplicatas e rode de novo.';
+    END;
+  END IF;
+END $$;
+
+-- 6) Recria a função com a assinatura EXATA que o client chama (10 parâmetros).
+--    Grava o username em users (views de PvP/ranking) E em persons (leitura do client).
 CREATE OR REPLACE FUNCTION sync_user_state_secure(
   p_username TEXT DEFAULT NULL,
   p_level INT DEFAULT 1,
@@ -109,7 +145,7 @@ BEGIN
     last_active_at = now()
   WHERE id = v_user_id;
 
-  -- Sincroniza o username também em persons (fonte de leitura do client)
+  -- Espelha o username em persons (fonte de leitura do client).
   IF p_username IS NOT NULL THEN
     UPDATE persons SET username = p_username WHERE id = auth.uid();
   END IF;
@@ -117,6 +153,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 4) Força o PostgREST a recarregar o schema cache imediatamente.
---    (É isto que resolve o "Could not find the function ... in the schema cache".)
+-- 7) Força o PostgREST a recarregar o schema cache imediatamente.
+--    (Resolve diretamente o "Could not find the function ... in the schema cache".)
 NOTIFY pgrst, 'reload schema';
