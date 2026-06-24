@@ -11,6 +11,7 @@ CREATE TABLE persons (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   email      text UNIQUE NOT NULL,
   name       text NOT NULL,
+  username   text,
   created_at timestamptz DEFAULT now()
 );
 
@@ -330,6 +331,11 @@ BEGIN
     settings = p_settings,
     last_active_at = now()
   WHERE id = v_user_id;
+
+  -- Sincroniza o username também em persons (fonte de leitura do client)
+  IF p_username IS NOT NULL THEN
+    UPDATE persons SET username = p_username WHERE id = auth.uid();
+  END IF;
 
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
